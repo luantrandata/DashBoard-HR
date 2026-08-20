@@ -657,7 +657,7 @@ const Upload = (function(){
     // ---- attendance (2nd workbook) — flexible header detection ----
     const attRaw = sheetRaw(wbAttendance, 'ChamCong');
     let attendance = [];
-    let attMeta = {found:false, headers:[]};
+    let attMeta = {found:false, headers:[], fieldsFound:{}};
     if(attRaw.length){
       const {headers, rows} = toObjects(attRaw);
       attMeta.headers = headers;
@@ -666,8 +666,15 @@ const Upload = (function(){
       const kDate = findKey(headers, [/^Ngay$/i, /ngaycong/i, /ngaychamcong/i, /^NgayLamViec$/i]);
       const kStatus = findKey(headers, [/trangthaichamcong/i, /^TrangThai$/i]);
       const kCheckInStatus = findKey(headers, [/trangthaicheckin/i, /trangthaivao/i]);
+      const kCheckOutStatus = findKey(headers, [/trangthaicheckout/i, /trangthaivera/i]);
       const kLateHrs = findKey(headers, [/sogiotre/i, /sogiomuon/i, /^Tre$/i, /gio.*tre/i]);
+      const kEarlyHrs = findKey(headers, [/sogiovesom/i, /sogioravesom/i, /vesom/i]);
+      const kOtHrs = findKey(headers, [/sogiot\b/i, /sogioot/i, /^OT$/i, /gio.*(lam|tang)ca/i, /overtime/i]);
+      const kConfirmStatus = findKey(headers, [/trangthaixacnhan/i, /xacnhancong/i]);
+      const kCheckInTime = findKey(headers, [/giovao/i, /gioch[ecú]ckin/i, /thoigianvao/i]);
+      const kCheckOutTime = findKey(headers, [/giora\b/i, /gioch[ecú]ckout/i, /thoigianra/i]);
       const kDept = findKey(headers, [/phongban/i]);
+      attMeta.fieldsFound = { kId,kName,kDate,kStatus,kCheckInStatus,kCheckOutStatus,kLateHrs,kEarlyHrs,kOtHrs,kConfirmStatus,kCheckInTime,kCheckOutTime,kDept };
       if(kId){
         attMeta.found = true;
         attendance = rows.filter(r=>r[kId]).map(r=>({
@@ -675,7 +682,13 @@ const Upload = (function(){
           date: kDate && Core.isDate(r[kDate]) ? r[kDate] : null,
           status: kStatus? r[kStatus] : null,
           checkInStatus: kCheckInStatus ? r[kCheckInStatus] : null,
+          checkOutStatus: kCheckOutStatus ? r[kCheckOutStatus] : null,
           lateHours: kLateHrs ? Number(r[kLateHrs])||0 : 0,
+          earlyHours: kEarlyHrs ? Number(r[kEarlyHrs])||0 : 0,
+          otHours: kOtHrs ? Number(r[kOtHrs])||0 : 0,
+          confirmStatus: kConfirmStatus ? r[kConfirmStatus] : null,
+          checkInTime: kCheckInTime ? r[kCheckInTime] : null,
+          checkOutTime: kCheckOutTime ? r[kCheckOutTime] : null,
           dept: kDept ? r[kDept] : null,
         }));
       }
@@ -882,6 +895,16 @@ const Agg = (function(){
 
     const resignations = filteredLinked(state.resignations).filter(r=>r.status==='3. Đã duyệt' && Core.inYear(r.endDate, currentYear()));
     const reasonCounts = Core.mapToSortedArr(Core.groupCount(resignations, r=>r.reason||'(Không ghi)'), true);
+    // nghỉ việc theo phòng ban / theo chi nhánh — join qua employee master để lấy chi nhánh (resignations tự thân không có field location)
+    const resignByDept = Core.mapToSortedArr(Core.groupCount(resignations, r=>r.dept||'(Không rõ)'), true).slice(0,15);
+    const resignByLocation = Core.mapToSortedArr(Core.groupCount(resignations, r=>{
+      const empRec = state.employees.find(e=>e.id===r.id);
+      return (empRec && empRec.location) || r.branch || '(Không rõ)';
+    }), true);
+    // nghỉ việc theo thời gian (theo tháng)
+    const resignByMonth = {};
+    resignations.forEach(r=>{ if(!Core.isDate(r.endDate)) return; const k=Core.monthKey(r.endDate); if(!resignByMonth[k]) resignByMonth[k]={count:0}; resignByMonth[k].count++; });
+    const resignMonthKeys = Object.keys(resignByMonth).sort();
     // early leavers: tenure at resignation < 12 months
     const tenureBands = {'<3 tháng':0,'3–6 tháng':0,'6–12 tháng':0,'1–3 năm':0,'>3 năm':0};
     resignations.forEach(r=>{
@@ -892,7 +915,7 @@ const Agg = (function(){
       else if(months<12) tenureBands['6–12 tháng']++; else if(months<36) tenureBands['1–3 năm']++; else tenureBands['>3 năm']++;
     });
 
-    return { activeCount: active.length, contractsTotal: contracts.length, expiring30, expiring60, expired, byStatus, byType, resignationsTotal: resignations.length, reasonCounts, tenureBands, active };
+    return { activeCount: active.length, contractsTotal: contracts.length, expiring30, expiring60, expired, byStatus, byType, resignationsTotal: resignations.length, reasonCounts, tenureBands, active, resignByDept, resignByLocation, resignByMonth, resignMonthKeys };
   }
 
   // ---------------- MODULE 3: TUYỂN DỤNG ----------------
@@ -909,7 +932,13 @@ const Agg = (function(){
       {label:'Tuyển thành công', test: c=>/chính thức/i.test(c.status||'')},
     ];
     const funnel = funnelDef.map(f=>({label:f.label, value: candidates.filter(f.test).length}));
-    const bySource = Core.mapToSortedArr(Core.groupCount(candidates, c=>c.referrer?'Referral':'Khác/Không rõ'), true);
+    // Nguồn tuyển: ưu tiên kênh đăng tuyển của tin (join qua jobId) — chi tiết hơn nhị phân referral/khác
+    const jobById = {}; state.jobs.forEach(j=> jobById[j.id]=j);
+    const bySource = Core.mapToSortedArr(Core.groupCount(candidates, c=>{
+      if(c.referrer) return 'Giới thiệu nội bộ (Referral)';
+      const job = jobById[c.jobId];
+      return (job && job.channel) || '(Không rõ nguồn)';
+    }), true);
     const byStatus = Core.mapToSortedArr(Core.groupCount(candidates, c=>c.status), true);
     const hired = candidates.filter(c=>/chính thức/i.test(c.status||''));
     const rejected = candidates.filter(c=>/rớt|rot/i.test(c.status||''));
@@ -961,7 +990,14 @@ const Agg = (function(){
       .filter(d=>d.count>=10)
       .sort((a,b)=>b.avg-a.avg);
 
-    return { total: leave.length, approved: approved.length, pending: pending.length, rejected: rejected.length, byType, byDept, byReason, avgSLA, slowSLA, dowCount, dowNames, pendingOver7, otherTotal: other.length, slaByApprover, slaByDept };
+    // Phân bổ thời gian xử lý đơn theo nhóm ngày (histogram)
+    const slaBuckets = {'0–3 ngày':0,'4–7 ngày':0,'8–14 ngày':0,'15–30 ngày':0,'>30 ngày':0};
+    slaList.forEach(l=>{
+      if(l.sla<=3) slaBuckets['0–3 ngày']++; else if(l.sla<=7) slaBuckets['4–7 ngày']++;
+      else if(l.sla<=14) slaBuckets['8–14 ngày']++; else if(l.sla<=30) slaBuckets['15–30 ngày']++; else slaBuckets['>30 ngày']++;
+    });
+
+    return { total: leave.length, approved: approved.length, pending: pending.length, rejected: rejected.length, byType, byDept, byReason, avgSLA, slowSLA, dowCount, dowNames, pendingOver7, otherTotal: other.length, slaByApprover, slaByDept, slaBuckets };
   }
 
   // ---------------- MODULE 5: CHẤM CÔNG ----------------
@@ -971,20 +1007,66 @@ const Agg = (function(){
     const empById = {}; state.employees.forEach(e=> empById[e.id]=e);
     const coveredIds = Core.uniq(att.map(a=>a.id));
     const totalActive = state.employees.filter(e=>e.status===ACTIVE).length;
+    const fields = state.attMeta.fieldsFound || {};
+    const hasEarly = !!fields.kEarlyHrs, hasOt = !!fields.kOtHrs, hasConfirm = !!fields.kConfirmStatus,
+          hasCheckTimes = !!fields.kCheckInTime && !!fields.kCheckOutTime, hasCheckOutStatus = !!fields.kCheckOutStatus;
+
+    function parseTimeToHours(t){
+      if(t===null||t===undefined) return null;
+      if(t instanceof Date) return t.getHours() + t.getMinutes()/60;
+      const s = String(t).trim();
+      const m = s.match(/^(\d{1,2}):(\d{2})/);
+      if(m) return parseInt(m[1],10) + parseInt(m[2],10)/60;
+      const n = Number(s); return isNaN(n) ? null : n; // Excel time serial fraction of day
+    }
+
     const byEmployee = {};
-    att.forEach(a=>{ if(!byEmployee[a.id]) byEmployee[a.id]={id:a.id, name:a.name, days:0, lateDays:0, lateHoursTotal:0, absentDays:0};
+    att.forEach(a=>{ if(!byEmployee[a.id]) byEmployee[a.id]={id:a.id, name:a.name, days:0, lateDays:0, lateHoursTotal:0, earlyDays:0, earlyHoursTotal:0, otHoursTotal:0, absentDays:0};
       const rec = byEmployee[a.id]; rec.days++;
       const st = (a.status||'')+'';
       if(/vắng|absent|nghỉ/i.test(st)) rec.absentDays++;
       if(a.lateHours && a.lateHours>0){ rec.lateDays++; rec.lateHoursTotal += a.lateHours; }
+      if(a.earlyHours && a.earlyHours>0){ rec.earlyDays++; rec.earlyHoursTotal += a.earlyHours; }
+      if(a.otHours) rec.otHoursTotal += a.otHours;
     });
     const empList = Object.values(byEmployee).sort((a,b)=>b.lateHoursTotal-a.lateHoursTotal);
+    const empListByEarly = [...Object.values(byEmployee)].sort((a,b)=>b.earlyHoursTotal-a.earlyHoursTotal).filter(e=>e.earlyHoursTotal>0);
     const totalRecords = att.length;
     const lateRecords = att.filter(a=>a.lateHours>0).length;
     const absentRecords = att.filter(a=>/vắng|absent|nghỉ/i.test((a.status||''))).length;
-    // trend by month
+    const earlyRecords = att.filter(a=>a.earlyHours>0).length;
+
+    // ---- Tỷ lệ chấm công đầy đủ (có cả check-in & check-out) ----
+    let fullAttendanceRate = null;
+    if(hasCheckTimes){
+      const withBoth = att.filter(a=>a.checkInTime && a.checkOutTime).length;
+      fullAttendanceRate = totalRecords? withBoth/totalRecords*100 : null;
+    } else if(hasCheckOutStatus){
+      const withBoth = att.filter(a=> a.checkInStatus && a.checkOutStatus && !/thiếu|chưa|missing/i.test(a.checkInStatus+''+a.checkOutStatus)).length;
+      fullAttendanceRate = totalRecords? withBoth/totalRecords*100 : null;
+    }
+
+    // ---- Tình trạng chấm công (donut) ----
+    const statusBuckets = {'Đủ công':0, 'Đi trễ / về sớm':0, 'Vắng mặt':0, 'Chưa chấm công':0};
+    att.forEach(a=>{
+      const isAbsent = /vắng|absent|nghỉ/i.test((a.status||''));
+      const missing = hasCheckTimes ? (!a.checkInTime && !a.checkOutTime) : false;
+      if(isAbsent) statusBuckets['Vắng mặt']++;
+      else if(missing) statusBuckets['Chưa chấm công']++;
+      else if((a.lateHours>0) || (a.earlyHours>0)) statusBuckets['Đi trễ / về sớm']++;
+      else statusBuckets['Đủ công']++;
+    });
+
+    // trend by month (mở rộng: tổng giờ trễ/về sớm/OT + lượt OT)
     const byMonth = {};
-    att.forEach(a=>{ if(!a.date) return; const k=Core.monthKey(a.date); if(!byMonth[k]) byMonth[k]={records:0,late:0,absent:0}; byMonth[k].records++; if(a.lateHours>0) byMonth[k].late++; if(/vắng|absent|nghỉ/i.test((a.status||''))) byMonth[k].absent++; });
+    att.forEach(a=>{ if(!a.date) return; const k=Core.monthKey(a.date);
+      if(!byMonth[k]) byMonth[k]={records:0,late:0,absent:0,lateHours:0,early:0,earlyHours:0,otHours:0,otCount:0};
+      const m = byMonth[k]; m.records++;
+      if(a.lateHours>0){ m.late++; m.lateHours+=a.lateHours; }
+      if(/vắng|absent|nghỉ/i.test((a.status||''))) m.absent++;
+      if(a.earlyHours>0){ m.early++; m.earlyHours+=a.earlyHours; }
+      if(a.otHours>0){ m.otCount++; m.otHours+=a.otHours; }
+    });
     const monthKeys = Object.keys(byMonth).sort();
     // anomalous lateness: > 3 hours likely wrong-shift data entry
     const anomalousLate = att.filter(a=>a.lateHours>3);
@@ -994,23 +1076,73 @@ const Agg = (function(){
     att.forEach(a=>{
       const emp = empById[a.id];
       const dept = (emp && emp.dept) || a.dept || '(Không rõ)';
-      if(!deptMap[dept]) deptMap[dept] = {dept, records:0, late:0, absent:0, employees:new Set()};
-      deptMap[dept].records++; deptMap[dept].employees.add(a.id);
-      if(a.lateHours>0) deptMap[dept].late++;
-      if(/vắng|absent|nghỉ/i.test((a.status||''))) deptMap[dept].absent++;
+      if(!deptMap[dept]) deptMap[dept] = {dept, records:0, late:0, absent:0, early:0, otHours:0, workHoursSum:0, workHoursCount:0, employees:new Set()};
+      const d = deptMap[dept];
+      d.records++; d.employees.add(a.id);
+      if(a.lateHours>0) d.late++;
+      if(/vắng|absent|nghỉ/i.test((a.status||''))) d.absent++;
+      if(a.earlyHours>0) d.early++;
+      if(a.otHours) d.otHours += a.otHours;
+      if(hasCheckTimes){
+        const ci = parseTimeToHours(a.checkInTime), co = parseTimeToHours(a.checkOutTime);
+        if(ci!==null && co!==null && co>ci){ d.workHoursSum += (co-ci); d.workHoursCount++; }
+      }
     });
     const byDept = Object.values(deptMap).map(d=>({
       dept: d.dept, empCount: d.employees.size, records: d.records,
       lateRate: d.records? d.late/d.records*100 : 0,
       absentRate: d.records? d.absent/d.records*100 : 0,
+      earlyRate: d.records? d.early/d.records*100 : 0,
+      otHours: d.otHours,
+      avgWorkHours: d.workHoursCount? d.workHoursSum/d.workHoursCount : null,
     })).sort((a,b)=>b.lateRate-a.lateRate);
+    const byDeptOt = [...byDept].filter(d=>d.otHours>0).sort((a,b)=>b.otHours-a.otHours);
+    const byDeptWorkHours = [...byDept].filter(d=>d.avgWorkHours!==null).sort((a,b)=>b.avgWorkHours-a.avgWorkHours);
 
     // ---- pattern theo ngày trong tuần (trễ / vắng) ----
     const dowNames = ['CN','T2','T3','T4','T5','T6','T7'];
     const dowLate = [0,0,0,0,0,0,0], dowAbsent = [0,0,0,0,0,0,0], dowTotal=[0,0,0,0,0,0,0];
     att.forEach(a=>{ if(!a.date) return; const d=a.date.getDay(); dowTotal[d]++; if(a.lateHours>0) dowLate[d]++; if(/vắng|absent|nghỉ/i.test((a.status||''))) dowAbsent[d]++; });
 
-    return { coveredCount: coveredIds.length, totalActive, totalRecords, lateRecords, absentRecords, empList, byMonth, monthKeys, anomalousLate, found: state.attMeta.found, byDept, dowNames, dowLate, dowAbsent, dowTotal };
+    // ---- heatmap theo ngày trong tháng (mật độ bất thường: trễ + về sớm + vắng, gộp mọi tháng) ----
+    const domCounts = new Array(32).fill(0); // index 1..31
+    att.forEach(a=>{ if(!a.date) return;
+      const isIssue = (a.lateHours>0) || (a.earlyHours>0) || /vắng|absent|nghỉ/i.test((a.status||''));
+      if(isIssue) domCounts[a.date.getDate()]++;
+    });
+
+    // ---- xác nhận công theo phòng ban (stacked) ----
+    let confirmByDept = [];
+    if(hasConfirm){
+      const cMap = {};
+      att.forEach(a=>{
+        const emp = empById[a.id]; const dept = (emp && emp.dept) || a.dept || '(Không rõ)';
+        if(!cMap[dept]) cMap[dept] = {dept, confirmed:0, unconfirmed:0, partial:0};
+        const st = (a.confirmStatus||'')+'';
+        if(/thiếu/i.test(st)) cMap[dept].partial++;
+        else if(/chưa/i.test(st)) cMap[dept].unconfirmed++;
+        else if(/đã xác nhận|confirmed/i.test(st)) cMap[dept].confirmed++;
+      });
+      confirmByDept = Object.values(cMap).sort((a,b)=>(b.confirmed+b.unconfirmed+b.partial)-(a.confirmed+a.unconfirmed+a.partial)).slice(0,12);
+    }
+
+    // ---- dữ liệu bất thường (thiếu check-in/out, giờ trễ/OT bất thường) ----
+    const anomalies = [];
+    att.forEach(a=>{
+      const isAbsent = /vắng|absent|nghỉ/i.test((a.status||''));
+      if(isAbsent) return;
+      if(hasCheckTimes){
+        if(!a.checkInTime) anomalies.push({...a, issue:'Thiếu Check-in'});
+        else if(!a.checkOutTime) anomalies.push({...a, issue:'Thiếu Check-out'});
+      }
+      if(a.lateHours>3) anomalies.push({...a, issue:'Giờ trễ bất thường (>3h)'});
+      if(a.otHours>6) anomalies.push({...a, issue:'Giờ OT bất thường (>6h)'});
+    });
+
+    return { coveredCount: coveredIds.length, totalActive, totalRecords, lateRecords, absentRecords, earlyRecords,
+      empList, empListByEarly, byMonth, monthKeys, anomalousLate, found: state.attMeta.found, byDept, byDeptOt, byDeptWorkHours,
+      dowNames, dowLate, dowAbsent, dowTotal, fullAttendanceRate, statusBuckets, domCounts, confirmByDept, anomalies,
+      hasEarly, hasOt, hasConfirm, hasCheckTimes };
   }
 
   // ---------------- MODULE 6: ALERTS ----------------
@@ -1211,7 +1343,26 @@ const Render = (function(){
     }).join('');
   }
 
-  return { kpiGrid, barChart, stackedBarChart, comboChart, donutChart, lineChart, table, insightList, funnel };
+  // Heatmap mật độ bất thường theo ngày trong tháng (1-31), gộp toàn bộ dữ liệu đang lọc.
+  // Chart.js không có loại heatmap sẵn nên dựng bằng CSS grid.
+  function heatmapDayOfMonth(containerId, domCounts){
+    const c = Core.$(containerId); if(!c) return;
+    const days = domCounts.slice(1); // index 1..31
+    const max = Math.max(1, ...days);
+    const cells = days.map((v,i)=>{
+      const day = i+1;
+      const intensity = v/max; // 0..1
+      const bg = v===0 ? 'var(--neutral-bg)' : `rgba(214,69,90,${0.12 + intensity*0.75})`;
+      const fg = intensity>0.55 ? '#fff' : 'var(--ink)';
+      return `<div title="Ngày ${day}: ${v} lượt bất thường" style="aspect-ratio:1; border-radius:6px; background:${bg}; color:${fg}; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:10px; font-weight:700;">
+        <span>${day}</span>${v>0?`<span style="font-size:9px;font-weight:600;opacity:0.85;">${v}</span>`:''}
+      </div>`;
+    }).join('');
+    c.innerHTML = `<div style="display:grid; grid-template-columns:repeat(7,1fr); gap:5px;">${cells}</div>
+      <div class="chip-row"><span class="chip">Nhạt = ít bất thường</span><span class="chip" style="background:rgba(214,69,90,0.75); color:#fff;">Đậm = nhiều bất thường</span></div>`;
+  }
+
+  return { kpiGrid, barChart, stackedBarChart, comboChart, donutChart, lineChart, table, insightList, funnel, heatmapDayOfMonth };
 })();
 </script>
 
@@ -1270,6 +1421,11 @@ const Pages = (function(){
         <div class="panel"><div class="panel-head"><h3>Lý do nghỉ việc</h3></div><div class="chart-wrap h260"><canvas id="hs-reason"></canvas></div></div>
       </div>
       <div class="callout info" id="hs-reason-callout" style="margin-top:12px;"></div>
+
+      <div class="grid grid-2" style="margin-top:14px;">
+        <div class="panel"><div class="panel-head"><h3>Nghỉ việc theo phòng ban</h3><span class="panel-badge">💡 Bấm để lọc</span></div><div class="chart-wrap h280"><canvas id="hs-resign-dept"></canvas></div></div>
+        <div class="panel"><div class="panel-head"><h3>Nghỉ việc theo chi nhánh</h3><span class="panel-badge">💡 Bấm để lọc</span></div><div class="chart-wrap h280"><canvas id="hs-resign-location"></canvas></div></div>
+      </div>
     </div>
 
     <!-- ============ PAGE 3: TUYỂN DỤNG ============ -->
@@ -1282,6 +1438,10 @@ const Pages = (function(){
       </div>
       <div class="section-head"><h2>Nhu cầu tuyển dụng theo phòng ban</h2></div>
       <div class="panel"><div class="panel-head"><h3 style="font-size:11px;color:var(--ink-faint);font-weight:600;">💡 Bấm cột để lọc theo phòng ban</h3></div><div class="chart-wrap h260"><canvas id="td-dept"></canvas></div></div>
+
+      <div class="section-head"><h2>Đánh giá nguồn tuyển dụng</h2><span class="section-sub">Xác định nguồn hiệu quả nhất để tối ưu chi phí tuyển dụng</span></div>
+      <div class="panel"><div class="chart-wrap h280"><canvas id="td-source"></canvas></div></div>
+
       <div class="section-head"><h2>Danh sách vị trí đang tuyển</h2></div>
       <div class="panel"><div class="tbl-scroll" id="td-jobs-table"></div></div>
     </div>
@@ -1297,6 +1457,13 @@ const Pages = (function(){
       <div class="panel"><div class="panel-head"><h3 style="font-size:11px;color:var(--ink-faint);font-weight:600;">💡 Bấm cột để lọc theo phòng ban</h3></div><div class="chart-wrap h280"><canvas id="dt-dept"></canvas></div></div>
       <div class="section-head"><h2>Lý do xin nghỉ (Top 10)</h2></div>
       <div class="panel"><div class="chart-wrap h260"><canvas id="dt-reason"></canvas></div></div>
+
+      <div class="section-head"><h2>Đơn thôi việc theo thời gian</h2><span class="section-sub">Số đơn thôi việc đã duyệt theo tháng</span></div>
+      <div class="panel"><div class="chart-wrap h260"><canvas id="dt-resign-trend"></canvas></div></div>
+
+      <div class="section-head"><h2>Thời gian xử lý đơn</h2><span class="section-sub">Phân bổ số đơn theo khoảng thời gian duyệt</span></div>
+      <div class="panel"><div class="chart-wrap h260"><canvas id="dt-sla-hist"></canvas></div></div>
+
       <div class="section-head"><h2>Approval SLA — đơn xử lý chậm (&gt; 7 ngày)</h2></div>
       <div class="panel"><div class="tbl-scroll" id="dt-slow-table"></div></div>
 
@@ -1311,18 +1478,44 @@ const Pages = (function(){
     <div class="page" id="p-chamcong">
       <div class="callout bad" id="att-coverage-callout"></div>
       <div class="kpi-grid" id="cc-kpis"></div>
-      <div class="section-head"><h2>Xu hướng theo tháng</h2><span class="section-sub">Nhóm nhân viên có dữ liệu chấm công</span></div>
-      <div class="panel"><div class="chart-wrap h280"><canvas id="cc-trend"></canvas></div></div>
+
+      <div class="section-head"><h2>Tình trạng chấm công</h2><span class="section-sub">Phân loại toàn bộ lượt chấm công đang lọc</span></div>
+      <div class="grid grid-2">
+        <div class="panel"><div class="panel-head"><h3>Tình trạng chấm công</h3></div><div class="chart-wrap h260"><canvas id="cc-status-donut"></canvas></div></div>
+        <div class="panel"><div class="panel-head"><h3>Xu hướng chấm công theo tháng</h3></div><div class="chart-wrap h260"><canvas id="cc-trend"></canvas></div></div>
+      </div>
       <div class="callout warn" style="margin-top:14px;" id="cc-anomaly-callout"></div>
+
+      <div class="section-head"><h2>Phân tích đi trễ / về sớm</h2><span class="section-sub">Số lượt và tổng thời gian theo tháng</span></div>
+      <div class="grid grid-2">
+        <div class="panel"><div class="panel-head"><h3>Đi trễ theo tháng</h3></div><div class="chart-wrap h260"><canvas id="cc-late-trend"></canvas></div></div>
+        <div class="panel"><div class="panel-head"><h3>Về sớm theo tháng</h3></div><div class="chart-wrap h260" id="cc-early-trend-wrap"><canvas id="cc-early-trend"></canvas></div></div>
+      </div>
 
       <div class="section-head"><h2>Phân tích theo phòng ban &amp; ngày trong tuần</h2><span class="section-sub">Nhóm nhân viên có dữ liệu chấm công</span></div>
       <div class="grid grid-2">
-        <div class="panel"><div class="panel-head"><h3>Tỷ lệ trễ/vắng theo phòng ban</h3></div><div class="tbl-scroll" id="cc-dept-table"></div></div>
+        <div class="panel"><div class="panel-head"><h3>Tỷ lệ trễ/vắng/về sớm theo phòng ban</h3></div><div class="tbl-scroll" id="cc-dept-table"></div></div>
         <div class="panel"><div class="panel-head"><h3>Trễ/vắng theo ngày trong tuần</h3><div class="panel-sub">Xác định ngày cao điểm</div></div><div class="chart-wrap h280"><canvas id="cc-dow"></canvas></div></div>
       </div>
 
+      <div class="section-head"><h2>Thời gian làm việc &amp; OT</h2></div>
+      <div class="grid grid-2">
+        <div class="panel"><div class="panel-head"><h3>Giờ làm trung bình theo phòng ban</h3></div><div class="chart-wrap h260" id="cc-workhours-wrap"><canvas id="cc-workhours"></canvas></div></div>
+        <div class="panel"><div class="panel-head"><h3>OT theo tháng</h3></div><div class="chart-wrap h260" id="cc-ot-trend-wrap"><canvas id="cc-ot-trend"></canvas></div></div>
+      </div>
+      <div class="panel" style="margin-top:14px;"><div class="panel-head"><h3>OT theo phòng ban</h3></div><div class="chart-wrap h260" id="cc-ot-dept-wrap"><canvas id="cc-ot-dept"></canvas></div></div>
+
+      <div class="section-head"><h2>Xác nhận công</h2><span class="section-sub">Đảm bảo dữ liệu công hoàn tất trước khi chốt lương</span></div>
+      <div class="panel" id="cc-confirm-wrap"><div class="chart-wrap h280"><canvas id="cc-confirm"></canvas></div></div>
+
+      <div class="section-head"><h2>Heatmap chấm công theo ngày trong tháng</h2><span class="section-sub">Mật độ trễ/về sớm/vắng gộp theo ngày 1–31 (mọi tháng)</span></div>
+      <div class="panel" id="cc-heatmap"></div>
+
       <div class="section-head"><h2>Chi tiết theo nhân viên</h2><span class="section-sub">Sắp xếp theo tổng giờ trễ</span></div>
       <div class="panel"><div class="tbl-scroll" id="cc-emp-table"></div></div>
+
+      <div class="section-head"><h2>Dữ liệu chấm công bất thường</h2><span class="section-sub">Thiếu Check-in/Check-out, giờ trễ/OT bất thường</span></div>
+      <div class="panel"><div class="tbl-scroll" id="cc-anomaly-table"></div></div>
     </div>
 
     <!-- ============ PAGE 6: HR ALERTS ============ -->
@@ -1505,7 +1698,7 @@ const App = (function(){
     renderOverview(ov, empMod);
     renderEmployee(empMod);
     renderRecruitment(recruit);
-    renderRequests(req);
+    renderRequests(req, empMod);
     renderAttendance(attMod);
     renderAlerts(alerts);
   }
@@ -1561,6 +1754,8 @@ const App = (function(){
       calloutEl.innerHTML = `<span class="ic">ℹ️</span><div><b>${Core.fmtPct(top.value/empMod.resignationsTotal*100)}</b> lý do nghỉ việc được ghi nhận là "<b>${top.label}</b>" — quá chung chung để phân tích nguyên nhân gốc rễ. Đề xuất bổ sung phỏng vấn thôi việc (exit interview) có cấu trúc hơn.</div>`;
       calloutEl.style.display='flex';
     } else { calloutEl.style.display='none'; }
+    Render.barChart('hs-resign-dept', empMod.resignByDept.map(d=>d.label), empMod.resignByDept.map(d=>d.value), {horizontal:true, color:Core.COLORS.red, filterKey:'dept', onClickLabel: l=>FilterBar.setFilter('dept', l)});
+    Render.barChart('hs-resign-location', empMod.resignByLocation.map(d=>d.label), empMod.resignByLocation.map(d=>d.value), {color:Core.COLORS.blue, filterKey:'location', onClickLabel: l=>FilterBar.setFilter('location', l)});
   }
 
   function renderRecruitment(recruit){
@@ -1574,13 +1769,14 @@ const App = (function(){
     Render.funnel('td-funnel', recruit.funnel);
     Render.donutChart('td-status', recruit.byStatus.map(s=>s.label), recruit.byStatus.map(s=>s.value));
     Render.barChart('td-dept', recruit.byDept.map(d=>d.label), recruit.byDept.map(d=>d.value), {horizontal:true, color:Core.COLORS.teal, filterKey:'dept', onClickLabel: l=>FilterBar.setFilter('dept', l)});
+    Render.barChart('td-source', recruit.bySource.map(s=>s.label), recruit.bySource.map(s=>s.value), {horizontal:true, color:Core.COLORS.purple});
     Render.table('td-jobs-table',
       [{label:'Vị trí', key:'position'}, {label:'Phòng ban', key:'dept'}, {label:'Chi nhánh', key:'branch'},
        {label:'SL cần', key:'qty'}, {label:'SL đã có', key:'filled'}, {label:'Trạng thái', key:'status'}],
       recruit.jobs, {emptyText:'Không có tin tuyển dụng phù hợp bộ lọc.'});
   }
 
-  function renderRequests(req){
+  function renderRequests(req, empMod){
     Render.kpiGrid('dt-kpis', [
       {label:'Tổng đơn xin phép', value:Core.fmtNum(req.total)},
       {label:'Đã duyệt', value:Core.fmtNum(req.approved), cls:'good'},
@@ -1593,6 +1789,10 @@ const App = (function(){
     Render.barChart('dt-dow', order.map(i=>req.dowNames[i]), order.map(i=>req.dowCount[i]), {color:Core.COLORS.purple});
     Render.barChart('dt-dept', req.byDept.map(d=>d.label), req.byDept.map(d=>d.value), {horizontal:true, color:Core.COLORS.blue, filterKey:'dept', onClickLabel: l=>FilterBar.setFilter('dept', l)});
     Render.barChart('dt-reason', req.byReason.map(r=>r.label), req.byReason.map(r=>r.value), {horizontal:true, color:Core.COLORS.amberDark});
+    Render.comboChart('dt-resign-trend', empMod.resignMonthKeys.map(Core.monthLabel),
+      {label:'Số đơn thôi việc', data: empMod.resignMonthKeys.map(k=>empMod.resignByMonth[k].count)},
+      {label:'Xu hướng', data: empMod.resignMonthKeys.map(k=>empMod.resignByMonth[k].count)});
+    Render.barChart('dt-sla-hist', Object.keys(req.slaBuckets), Object.values(req.slaBuckets), {color:Core.COLORS.blue});
     Render.table('dt-slow-table',
       [{label:'Mã NV', key:'id'}, {label:'Họ tên', key:'name'}, {label:'Phòng ban', key:'dept'},
        {label:'Ngày tạo', render:r=>r.created.toLocaleDateString('vi-VN')},
@@ -1619,14 +1819,22 @@ const App = (function(){
         covEl.className = 'callout info';
       }
     } else {
+      covEl.className = 'callout bad';
       covEl.innerHTML = `<span class="ic">⚠️</span><div><b>Dữ liệu chấm công chỉ phủ ${attMod.coveredCount}/${attMod.totalActive} nhân viên đang làm việc (${Core.fmtPct(cov)})</b> — chủ yếu là nhóm dùng app (văn phòng/HQ), KHÔNG đại diện cho ~89% lực lượng part-time (giáo viên/trợ giảng). Các chỉ số dưới đây chỉ phản ánh nhóm này.</div>`;
     }
-    Render.kpiGrid('cc-kpis', [
+
+    const kpis = [
       {label:'NV có dữ liệu', value:attMod.coveredCount, unit:'/'+attMod.totalActive},
       {label:'Tổng lượt chấm công', value:Core.fmtNum(attMod.totalRecords)},
       {label:'Lượt đi trễ', value:Core.fmtNum(attMod.lateRecords), cls:'warn'},
       {label:'Lượt vắng', value:Core.fmtNum(attMod.absentRecords), cls:'bad'},
-    ]);
+    ];
+    if(attMod.fullAttendanceRate!==null){
+      kpis.push({label:'Tỷ lệ chấm công đầy đủ', value:Core.fmtPct(attMod.fullAttendanceRate), cls: attMod.fullAttendanceRate<90?'warn':'good'});
+    }
+    Render.kpiGrid('cc-kpis', kpis);
+
+    Render.donutChart('cc-status-donut', Object.keys(attMod.statusBuckets), Object.values(attMod.statusBuckets));
     Render.lineChart('cc-trend', attMod.monthKeys.map(Core.monthLabel), [
       {label:'Lượt chấm công', data: attMod.monthKeys.map(k=>attMod.byMonth[k].records), color:Core.COLORS.blue},
       {label:'Lượt trễ', data: attMod.monthKeys.map(k=>attMod.byMonth[k].late), color:Core.COLORS.amberDark},
@@ -1637,9 +1845,26 @@ const App = (function(){
       anomEl.innerHTML = `<span class="ic">ℹ️</span><div><b>${attMod.anomalousLate.length}</b> lượt có số giờ trễ &gt; 3 giờ — nhiều khả năng là do chọn sai ca trong app chứ không phải đi trễ thực tế. Nên loại các giá trị này trước khi tính KPI Late Rate chính thức.</div>`;
       anomEl.style.display='flex';
     } else { anomEl.style.display='none'; }
+
+    // Đi trễ theo tháng (combo: lượt + tổng giờ)
+    Render.comboChart('cc-late-trend', attMod.monthKeys.map(Core.monthLabel),
+      {label:'Số lượt trễ', data: attMod.monthKeys.map(k=>attMod.byMonth[k].late)},
+      {label:'Tổng giờ trễ', data: attMod.monthKeys.map(k=>Math.round(attMod.byMonth[k].lateHours*10)/10)});
+
+    // Về sớm theo tháng — chỉ khi phát hiện được cột dữ liệu
+    if(attMod.hasEarly){
+      Core.$('cc-early-trend-wrap').innerHTML = '<canvas id="cc-early-trend"></canvas>';
+      Render.comboChart('cc-early-trend', attMod.monthKeys.map(Core.monthLabel),
+        {label:'Số lượt về sớm', data: attMod.monthKeys.map(k=>attMod.byMonth[k].early)},
+        {label:'Tổng giờ về sớm', data: attMod.monthKeys.map(k=>Math.round(attMod.byMonth[k].earlyHours*10)/10)});
+    } else {
+      Core.$('cc-early-trend-wrap').innerHTML = '<div class="empty-note">File chấm công chưa có cột "Số giờ về sớm" — không thể phân tích mục này.</div>';
+    }
+
     Render.table('cc-dept-table',
       [{label:'Phòng ban', key:'dept'}, {label:'Số NV', key:'empCount'}, {label:'Lượt chấm công', key:'records'},
        {label:'Tỷ lệ trễ', render:r=>`<span class="badge ${r.lateRate>20?'bad':(r.lateRate>10?'warn':'good')}">${Core.fmtPct(r.lateRate)}</span>`},
+       {label:'Tỷ lệ về sớm', render:r=> attMod.hasEarly? `<span class="badge ${r.earlyRate>10?'warn':'neutral'}">${Core.fmtPct(r.earlyRate)}</span>` : '—'},
        {label:'Tỷ lệ vắng', render:r=>`<span class="badge ${r.absentRate>10?'bad':'neutral'}">${Core.fmtPct(r.absentRate)}</span>`}],
       attMod.byDept, {emptyText:'Không có dữ liệu phòng ban.', onRowClick: r=>FilterBar.setFilter('dept', r.dept)});
     const dowOrder=[1,2,3,4,5,6,0];
@@ -1647,11 +1872,54 @@ const App = (function(){
       {label:'Lượt trễ', data: dowOrder.map(i=>attMod.dowLate[i]), color:Core.COLORS.amberDark},
       {label:'Lượt vắng', data: dowOrder.map(i=>attMod.dowAbsent[i]), color:Core.COLORS.red},
     ]);
+
+    // Giờ làm trung bình theo phòng ban — cần cả GioVao & GioRa
+    if(attMod.hasCheckTimes && attMod.byDeptWorkHours.length>0){
+      Core.$('cc-workhours-wrap').innerHTML = '<canvas id="cc-workhours"></canvas>';
+      Render.barChart('cc-workhours', attMod.byDeptWorkHours.map(d=>d.dept), attMod.byDeptWorkHours.map(d=>Math.round(d.avgWorkHours*10)/10), {horizontal:true, color:Core.COLORS.teal});
+    } else {
+      Core.$('cc-workhours-wrap').innerHTML = '<div class="empty-note">File chấm công chưa có cột giờ Check-in/Check-out dạng thời gian — không tính được số giờ làm việc.</div>';
+    }
+
+    // OT
+    if(attMod.hasOt){
+      Core.$('cc-ot-trend-wrap').innerHTML = '<canvas id="cc-ot-trend"></canvas>';
+      Render.comboChart('cc-ot-trend', attMod.monthKeys.map(Core.monthLabel),
+        {label:'Số lượt OT', data: attMod.monthKeys.map(k=>attMod.byMonth[k].otCount)},
+        {label:'Tổng giờ OT', data: attMod.monthKeys.map(k=>Math.round(attMod.byMonth[k].otHours*10)/10)});
+      Core.$('cc-ot-dept-wrap').innerHTML = '<canvas id="cc-ot-dept"></canvas>';
+      Render.barChart('cc-ot-dept', attMod.byDeptOt.map(d=>d.dept), attMod.byDeptOt.map(d=>Math.round(d.otHours*10)/10), {horizontal:true, color:Core.COLORS.amberDark});
+    } else {
+      Core.$('cc-ot-trend-wrap').innerHTML = '<div class="empty-note">File chấm công chưa có cột "Số giờ OT" — không thể phân tích làm thêm giờ.</div>';
+      Core.$('cc-ot-dept-wrap').innerHTML = '<div class="empty-note">Không có dữ liệu OT.</div>';
+    }
+
+    // Xác nhận công theo phòng ban
+    if(attMod.hasConfirm && attMod.confirmByDept.length>0){
+      Core.$('cc-confirm-wrap').innerHTML = '<div class="chart-wrap h280"><canvas id="cc-confirm"></canvas></div>';
+      Render.stackedBarChart('cc-confirm', attMod.confirmByDept.map(d=>d.dept), [
+        {label:'Đã xác nhận', data: attMod.confirmByDept.map(d=>d.confirmed), color:Core.COLORS.green},
+        {label:'Xác nhận thiếu', data: attMod.confirmByDept.map(d=>d.partial), color:Core.COLORS.amberDark},
+        {label:'Chưa xác nhận', data: attMod.confirmByDept.map(d=>d.unconfirmed), color:Core.COLORS.red},
+      ]);
+    } else {
+      Core.$('cc-confirm-wrap').innerHTML = '<div class="empty-note">File chấm công chưa có cột trạng thái xác nhận công — không thể phân tích mục này.</div>';
+    }
+
+    Render.heatmapDayOfMonth('cc-heatmap', attMod.domCounts);
+
     Render.table('cc-emp-table',
       [{label:'Mã NV', key:'id'}, {label:'Họ tên', key:'name'}, {label:'Số ngày công', key:'days'},
        {label:'Số lần trễ', key:'lateDays'}, {label:'Tổng giờ trễ', render:r=>Core.fmtNum1(r.lateHoursTotal)},
+       {label:'Số lần về sớm', render:r=> attMod.hasEarly? r.earlyDays : '—'},
        {label:'Số ngày vắng', key:'absentDays'}],
       attMod.empList, {emptyText:'Không có dữ liệu chấm công phù hợp.'});
+
+    Render.table('cc-anomaly-table',
+      [{label:'Mã NV', key:'id'}, {label:'Họ tên', key:'name'},
+       {label:'Ngày', render:r=> r.date? r.date.toLocaleDateString('vi-VN') : '—'},
+       {label:'Loại bất thường', render:r=>`<span class="badge bad">${r.issue}</span>`}],
+      attMod.anomalies.slice(0,50), {emptyText:'Không phát hiện dữ liệu chấm công bất thường.'});
   }
 
   function renderAlerts(alerts){
