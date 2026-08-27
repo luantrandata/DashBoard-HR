@@ -181,16 +181,18 @@ button{font-family:var(--font-body); cursor:pointer;}
   padding:12px 14px; margin-bottom:18px; box-shadow:var(--shadow-sm);
 }
 .filterbar .fb-label{ font-size:11px; font-weight:700; color:var(--ink-faint); text-transform:uppercase; letter-spacing:0.05em; margin-right:2px;}
-.filterbar select{
+.filterbar select, .filterbar input[type="date"]{
   border:1px solid var(--line); border-radius:8px; padding:7px 10px; font-size:12.6px;
   background:var(--paper); color:var(--ink); font-weight:500; min-width:132px;
+  font-family: var(--font-body);
 }
-.filterbar select:focus{ outline:2px solid var(--kdi-blue); outline-offset:1px; }
+.filterbar input[type="date"]{ min-width:140px; }
+.filterbar select:focus, .filterbar input[type="date"]:focus{ outline:2px solid var(--kdi-blue); outline-offset:1px; }
 .fb-reset{ margin-left:auto; font-size:12px; color:var(--kdi-blue); font-weight:600; background:none; border:none; }
 .fb-reset:hover{ text-decoration:underline; }
 
 /* ---------- Section headers ---------- */
-.section-head{ display:flex; align-items:baseline; justify-content:space-between; margin: 26px 0 12px 0; }
+.section-head{ display:flex; align-items:baseline; justify-content:space-between; margin: 18px 0 9px 0; }
 .section-head h2{ font-size:15.5px; }
 .section-head .section-sub{ font-size:12px; color:var(--ink-faint); }
 .section-head:first-child{ margin-top:0; }
@@ -199,7 +201,7 @@ button{font-family:var(--font-body); cursor:pointer;}
 .kpi-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px; }
 .kpi-card{
   background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
-  padding:16px 16px 14px 16px; box-shadow:var(--shadow-sm); position:relative; overflow:hidden;
+  padding:12px 14px 11px 14px; box-shadow:var(--shadow-sm); position:relative; overflow:hidden;
 }
 .kpi-card .kpi-label{ font-size:11.5px; color:var(--ink-faint); font-weight:600; text-transform:uppercase; letter-spacing:0.03em; margin-bottom:8px; }
 .kpi-card .kpi-value{ font-family:var(--font-display); font-size:26px; font-weight:700; color:var(--ink); line-height:1.1; }
@@ -215,7 +217,7 @@ button{font-family:var(--font-body); cursor:pointer;}
 .kpi-card.good .kpi-bar{ background:var(--good); }
 
 /* ---------- Grid / Panels ---------- */
-.grid{ display:grid; gap:14px; }
+.grid{ display:grid; gap:10px; }
 .grid-2{ grid-template-columns:1fr 1fr; }
 .grid-3{ grid-template-columns:1fr 1fr 1fr; }
 .grid-12{ grid-template-columns: repeat(12, 1fr); }
@@ -229,14 +231,14 @@ button{font-family:var(--font-body); cursor:pointer;}
 
 .panel{
   background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
-  padding:16px 18px 18px 18px; box-shadow:var(--shadow-sm);
+  padding:13px 15px 14px 15px; box-shadow:var(--shadow-sm);
 }
-.panel-head{ display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:12px; gap:10px;}
+.panel-head{ display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:8px; gap:10px;}
 .panel-head h3{ font-size:13.5px; font-weight:700; }
 .panel-head .panel-sub{ font-size:11px; color:var(--ink-faint); margin-top:2px; font-weight:500;}
 .panel-badge{ font-size:10px; font-weight:700; padding:3px 8px; border-radius:6px; background:var(--neutral-bg); color:var(--ink-soft); white-space:nowrap;}
 .chart-wrap{ position:relative; width:100%; }
-.chart-wrap.h220{ height:220px; } .chart-wrap.h240{ height:240px; } .chart-wrap.h260{ height:260px; } .chart-wrap.h280{ height:280px; } .chart-wrap.h300{ height:300px; } .chart-wrap.h340{ height:340px;}
+.chart-wrap.h220{ height:185px; } .chart-wrap.h240{ height:200px; } .chart-wrap.h260{ height:215px; } .chart-wrap.h280{ height:230px; } .chart-wrap.h300{ height:250px; } .chart-wrap.h340{ height:280px;}
 
 /* ---------- Disclaimer / callout ---------- */
 .callout{ display:flex; gap:10px; padding:11px 13px; border-radius:9px; font-size:12px; line-height:1.5; margin-bottom:14px; }
@@ -315,6 +317,8 @@ tr:hover td{ background:var(--paper); }
 /* ---------- Legend chips ---------- */
 .chip-row{ display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
 .chip{ font-size:10.8px; font-weight:600; padding:4px 9px; border-radius:99px; background:var(--neutral-bg); color:var(--ink-soft); }
+.chip.gran-chip{ cursor:pointer; user-select:none; }
+.chip.gran-chip.active{ background:var(--kdi-blue); color:#fff; }
 
 /* ---------- Tabs (sub navigation inside a module) ---------- */
 .subtabs{ display:flex; gap:4px; margin-bottom:16px; border-bottom:1px solid var(--line); }
@@ -329,7 +333,24 @@ tr:hover td{ background:var(--paper); }
      UPLOAD GATE — auto-skipped when embedded default data loads OK;
      reopened as an overlay via "Cập nhật dữ liệu" in the topbar.
      ============================================================ -->
-<div id="uploadGate">
+<!-- ============================================================
+     INITIAL LOADER — shown only during the very first, silent
+     load of the embedded default data. Not the upload gate.
+     ============================================================ -->
+<div id="initialLoader" style="min-height:100vh; width:100%; display:flex; align-items:center; justify-content:center; background: radial-gradient(circle at 20% 20%, #1B57A8 0%, var(--kdi-blue-dark) 60%, #0A2A55 100%);">
+  <div style="text-align:center; color:#fff;">
+    <div class="sidebar-logo" style="width:52px;height:52px;font-size:20px;margin:0 auto 18px auto;color:var(--kdi-blue-dark);">KDI</div>
+    <div style="width:34px;height:34px;border:3px solid rgba(255,255,255,0.25);border-top-color:var(--kdi-amber);border-radius:50%;margin:0 auto 14px auto;animation:spin 0.8s linear infinite;"></div>
+    <div style="font-size:13px;font-weight:600;color:rgba(255,255,255,0.85);">Đang tải dashboard…</div>
+  </div>
+</div>
+<style>@keyframes spin{ to{ transform:rotate(360deg); } }</style>
+
+<!-- ============================================================
+     UPLOAD GATE — only shown if embedded default data fails to
+     load, or reopened as an overlay via "Cập nhật dữ liệu".
+     ============================================================ -->
+<div id="uploadGate" style="display:none;">
   <div class="upload-card">
     <div class="brand-row">
       <div class="sidebar-logo" style="color:var(--kdi-blue-dark);">KDI</div>
@@ -431,6 +452,12 @@ const Core = (function(){
   function fmtPct(n,d){ if(n===null||n===undefined||isNaN(n)) return '—'; return n.toFixed(d===undefined?1:d)+'%'; }
   function isDate(v){ return v instanceof Date && !isNaN(v); }
   function inYear(date, year){ if(!year || year==='all') return true; if(!isDate(date)) return true; return date.getFullYear() === parseInt(year,10); }
+  function inDateRange(date, from, to){
+    if(!isDate(date)) return true; // không xác định được ngày -> không loại (tránh ẩn nhầm dữ liệu)
+    if(from && date < from) return false;
+    if(to && date > to) return false;
+    return true;
+  }
   function daysBetween(a,b){ if(!isDate(a)||!isDate(b)) return null; return Math.round((b-a)/86400000); }
   function yearsBetween(a,b){ if(!isDate(a)||!isDate(b)) return null; return (b-a)/(365.25*86400000); }
   function ageFromDOB(dob, ref){ if(!isDate(dob)) return null; ref = ref || new Date(); let age = ref.getFullYear()-dob.getFullYear(); const m=ref.getMonth()-dob.getMonth(); if(m<0 || (m===0 && ref.getDate()<dob.getDate())) age--; return age; }
@@ -465,11 +492,30 @@ const Core = (function(){
   function yearMonthKeys(year){
     const out=[]; for(let m=0;m<12;m++){ out.push(year+'-'+String(m+1).padStart(2,'0')); } return out;
   }
+  // Sinh danh sách tháng (YYYY-MM) trong khoảng [from,to], giới hạn tối đa 36 tháng để tránh chart quá dày.
+  function monthKeysInRange(from, to){
+    const out=[]; let d = new Date(from.getFullYear(), from.getMonth(), 1);
+    const end = new Date(to.getFullYear(), to.getMonth(), 1);
+    let guard=0;
+    while(d<=end && guard<36){ out.push(monthKey(d)); d = new Date(d.getFullYear(), d.getMonth()+1, 1); guard++; }
+    return out;
+  }
   function monthEndDate(key){ const [y,m]=key.split('-').map(Number); return new Date(y, m, 0, 23,59,59); }
+  function isoWeekKey(d){
+    const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    const dayNum = (date.getUTCDay() + 6) % 7; // Monday=0
+    date.setUTCDate(date.getUTCDate() - dayNum + 3);
+    const firstThursday = new Date(Date.UTC(date.getUTCFullYear(),0,4));
+    const weekNum = 1 + Math.round(((date - firstThursday) / 86400000 - 3 + ((firstThursday.getUTCDay()+6)%7)) / 7);
+    return date.getUTCFullYear() + '-W' + String(weekNum).padStart(2,'0');
+  }
+  function dayKey(d){ if(!isDate(d)) return null; return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  function dayLabel(key){ if(!key) return ''; const [y,m,d]=key.split('-'); return d+'/'+m; }
+  function weekLabel(key){ return key ? key.replace('-','/') : ''; }
 
   function el(tag, cls, html){ const e=document.createElement(tag); if(cls) e.className=cls; if(html!==undefined) e.innerHTML=html; return e; }
 
-  return { COLORS, PALETTE, $, fmtNum, fmtNum1, fmtPct, isDate, inYear, daysBetween, yearsBetween, ageFromDOB, monthKey, monthLabel, groupCount, mapToSortedArr, topN, sum, uniq, normKey, last12MonthKeys, yearMonthKeys, monthEndDate, el };
+  return { COLORS, PALETTE, $, fmtNum, fmtNum1, fmtPct, isDate, inYear, inDateRange, daysBetween, yearsBetween, ageFromDOB, monthKey, monthLabel, groupCount, mapToSortedArr, topN, sum, uniq, normKey, last12MonthKeys, yearMonthKeys, monthKeysInRange, monthEndDate, isoWeekKey, dayKey, dayLabel, weekLabel, el };
 })();
 </script>
 
@@ -599,6 +645,7 @@ const Upload = (function(){
         title: r['ChucDanhHienTai'],
         gender: demo.gender || null,
         dob: Core.isDate(demo.dob) ? demo.dob : null,
+        candidateRef: r['HoSoUngVien'] ? String(r['HoSoUngVien']).split('_')[0].trim() : null,
       };
     });
 
@@ -650,6 +697,7 @@ const Upload = (function(){
       id: r['HoSoUngVienID'], jobId: r['TuyenDungID'], status: r['TrangThaiUngVien'],
       name: r['HoTenUngVien']||r['TenUngVien'], position: r['ViTriUngTuyen'],
       referrer: r['NguoiGioiThieu'],
+      appliedDate: Core.isDate(r['NgayTao'])?r['NgayTao']:null,
       interview1: Core.isDate(r['NgayPhongVan1'])?r['NgayPhongVan1']:null,
       hireDate: Core.isDate(r['NgayNhanViec'])?r['NgayNhanViec']:null,
     }));
@@ -722,10 +770,10 @@ const Upload = (function(){
    ENGINE_FILTERBAR — global filter state + dropdown population
    ============================================================ */
 const FilterBar = (function(){
-  let state = { location:'all', khoi:'all', dept:'all', empType:'all', group:'all', status:'all', year:'all' };
+  let state = { location:'all', khoi:'all', dept:'all', empType:'all', group:'all', status:'all', fromDate:null, toDate:null, recruitStatus:'all', leaveStatus:'all', attStatus:'all' };
   let empIndex = {}; // id -> employee, used to join other datasets
   let changeCallback = null;
-  const SELECT_IDS = { location:'fbLocation', khoi:'fbKhoi', dept:'fbDept', empType:'fbType', group:'fbGroup', status:'fbStatus', year:'fbYear' };
+  const SELECT_IDS = { location:'fbLocation', khoi:'fbKhoi', dept:'fbDept', empType:'fbType', group:'fbGroup', status:'fbStatus', recruitStatus:'fbRecruitStatus', leaveStatus:'fbLeaveStatus', attStatus:'fbAttStatus' };
 
   function build(employees){
     empIndex = {};
@@ -736,12 +784,10 @@ const FilterBar = (function(){
     return Core.uniq(employees.map(e=>e[field])).sort();
   }
 
-  function employeeActiveInYear(e, year){
-    if(year==='all') return true;
-    const y = parseInt(year,10);
-    const yearStart = new Date(y,0,1), yearEnd = new Date(y,11,31,23,59,59);
-    const startedByEnd = e.startDate ? e.startDate <= yearEnd : true;
-    const notEndedBeforeStart = e.endDate ? e.endDate >= yearStart : true;
+  function employeeActiveInRange(e, from, to){
+    if(!from && !to) return true;
+    const startedByEnd = (e.startDate && to) ? e.startDate <= to : true;
+    const notEndedBeforeStart = (e.endDate && from) ? e.endDate >= from : true;
     return startedByEnd && notEndedBeforeStart;
   }
 
@@ -752,7 +798,7 @@ const FilterBar = (function(){
     if(state.empType!=='all' && e.empType!==state.empType) return false;
     if(state.group!=='all' && e.group!==state.group) return false;
     if(state.status!=='all' && e.status!==state.status) return false;
-    if(!employeeActiveInYear(e, state.year)) return false;
+    if(!employeeActiveInRange(e, state.fromDate, state.toDate)) return false;
     return true;
   }
   // join records that carry MaNhanVien to employee dims; fallback true if no linked employee
@@ -761,6 +807,10 @@ const FilterBar = (function(){
     if(!emp) return true; // can't verify -> don't drop (avoid hiding legit data)
     return passesEmployee(emp);
   }
+
+  function fmtDateInput(d){ if(!d) return ''; const p=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`; }
+  function parseDateInput(v){ if(!v) return null; const [y,m,d]=v.split('-').map(Number); return new Date(y, m-1, d); }
+  function parseDateInputEnd(v){ if(!v) return null; const [y,m,d]=v.split('-').map(Number); return new Date(y, m-1, d, 23,59,59); }
 
   function renderControls(container, stateData, onChange){
     changeCallback = onChange;
@@ -771,11 +821,13 @@ const FilterBar = (function(){
     const types = options(employees,'empType');
     const groups = options(employees,'group');
     const statuses = options(employees,'status');
-    const years = stateData.availableYears || [];
     function opt(list){ return list.map(v=>`<option value="${v}">${v}</option>`).join(''); }
     container.innerHTML = `
       <span class="fb-label">Bộ lọc</span>
-      <select id="fbYear"><option value="all">Tất cả thời gian</option>${opt(years)}</select>
+      <span class="fb-label" style="margin-left:4px;">Từ ngày</span>
+      <input type="date" id="fbFromDate" value="${fmtDateInput(state.fromDate)}">
+      <span class="fb-label">Đến ngày</span>
+      <input type="date" id="fbToDate" value="${fmtDateInput(state.toDate)}">
       <select id="fbLocation"><option value="all">Tất cả chi nhánh</option>${opt(locs)}</select>
       <select id="fbKhoi"><option value="all">Tất cả khối</option>${opt(khois)}</select>
       <select id="fbDept"><option value="all">Tất cả phòng ban</option>${opt(depts)}</select>
@@ -784,7 +836,8 @@ const FilterBar = (function(){
       <select id="fbStatus"><option value="all">Tất cả trạng thái</option>${opt(statuses)}</select>
       <button class="fb-reset" id="fbReset">↺ Đặt lại bộ lọc</button>
     `;
-    Core.$('fbYear').onchange = e=>{ state.year=e.target.value; onChange(); };
+    Core.$('fbFromDate').onchange = e=>{ state.fromDate=parseDateInput(e.target.value); onChange(); };
+    Core.$('fbToDate').onchange = e=>{ state.toDate=parseDateInputEnd(e.target.value); onChange(); };
     Core.$('fbLocation').onchange = e=>{ state.location=e.target.value; onChange(); };
     Core.$('fbKhoi').onchange = e=>{ state.khoi=e.target.value; onChange(); };
     Core.$('fbDept').onchange = e=>{ state.dept=e.target.value; onChange(); };
@@ -792,10 +845,23 @@ const FilterBar = (function(){
     Core.$('fbGroup').onchange = e=>{ state.group=e.target.value; onChange(); };
     Core.$('fbStatus').onchange = e=>{ state.status=e.target.value; onChange(); };
     Core.$('fbReset').onclick = ()=>{
-      state = { location:'all', khoi:'all', dept:'all', empType:'all', group:'all', status:'all', year:'all' };
+      state = { location:'all', khoi:'all', dept:'all', empType:'all', group:'all', status:'all', fromDate:null, toDate:null, recruitStatus:'all', leaveStatus:'all', attStatus:'all' };
       container.querySelectorAll('select').forEach(s=>s.value='all');
+      container.querySelectorAll('input[type="date"]').forEach(s=>s.value='');
+      document.querySelectorAll('.page-filter select').forEach(s=>s.value='all');
       onChange();
     };
+  }
+
+  // Renders a single page-scoped filter dropdown (e.g. "Trạng thái đơn" on the
+  // Đơn từ page). Uses the same setFilter()/state mechanism as the global bar,
+  // so chart click handlers and this dropdown always stay in sync.
+  function renderPageFilter(containerId, key, options, label){
+    const c = Core.$(containerId); if(!c) return;
+    const opt = options.map(v=>`<option value="${v}">${v}</option>`).join('');
+    c.innerHTML = `<span class="fb-label">${label}</span><select id="${SELECT_IDS[key]}" class="page-filter">${'<option value="all">Tất cả</option>'+opt}</select>`;
+    Core.$(SELECT_IDS[key]).value = state[key];
+    Core.$(SELECT_IDS[key]).onchange = e=>{ state[key]=e.target.value; changeCallback && changeCallback(); };
   }
 
   // Called from chart click handlers to cross-filter the whole dashboard.
@@ -813,7 +879,7 @@ const FilterBar = (function(){
 
   function getState(){ return state; }
 
-  return { build, passesEmployee, passesLinked, renderControls, setFilter, getState };
+  return { build, passesEmployee, passesLinked, renderControls, renderPageFilter, setFilter, getState };
 })();
 </script>
 
@@ -826,7 +892,7 @@ const Agg = (function(){
 
   function filteredEmployees(all){ return all.filter(FilterBar.passesEmployee); }
   function filteredLinked(all){ return all.filter(FilterBar.passesLinked); }
-  function currentYear(){ return FilterBar.getState().year; }
+  function currentRange(){ const s = FilterBar.getState(); return {from: s.fromDate, to: s.toDate}; }
 
   // ---------------- MODULE 1: TỔNG QUAN ----------------
   function overview(state){
@@ -839,9 +905,9 @@ const Agg = (function(){
     const newThisMonth = active.filter(e=> Core.isDate(e.startDate) && e.startDate>=startThisMonth).length;
     const leftThisMonth = emp.filter(e=> e.status!==ACTIVE && Core.isDate(e.endDate) && e.endDate>=startThisMonth).length;
 
-    // headcount trend: 12 tháng của năm đang chọn (Thời gian), hoặc 12 tháng gần nhất nếu chọn "Tất cả"
-    const selectedYear = currentYear();
-    const months = (selectedYear==='all') ? Core.last12MonthKeys(now) : Core.yearMonthKeys(parseInt(selectedYear,10));
+    // headcount trend: theo đúng khoảng Từ ngày–Đến ngày đang chọn, hoặc 12 tháng gần nhất nếu để trống
+    const range = currentRange();
+    const months = (range.from && range.to) ? Core.monthKeysInRange(range.from, range.to) : Core.last12MonthKeys(now);
     const joinsByMonth = {}, leavesByMonth = {};
     months.forEach(k=>{joinsByMonth[k]=0; leavesByMonth[k]=0;});
     emp.forEach(e=>{
@@ -872,7 +938,7 @@ const Agg = (function(){
 
     const turnoverRate = active.length>0 ? (resigned.filter(r=>r.status==='3. Đã duyệt').length / (active.length+resigned.filter(r=>r.status==='3. Đã duyệt').length) * 100) : 0;
 
-    return { total: emp.length, active: active.length, newThisMonth, leftThisMonth, turnoverRate,
+    return { total: emp.length, active: active.length, activeList: active, newThisMonth, leftThisMonth, turnoverRate,
       branches: Core.uniq(active.map(e=>e.location)).length,
       months, netSeries, joinsByMonth, leavesByMonth,
       byDept, byLocation, byGenderMap, genderCoverage, byType, ageBuckets, ageCoverage, tenureBuckets };
@@ -882,6 +948,8 @@ const Agg = (function(){
   function employeeModule(state){
     const emp = filteredEmployees(state.employees);
     const active = emp.filter(e=>e.status===ACTIVE);
+    const preboarding = emp.filter(e=>e.status==='Chuẩn bị nhận việc');
+    const byTitle = Core.mapToSortedArr(Core.groupCount(active, e=>e.title), true).slice(0,15);
     const contracts = filteredLinked(state.contracts);
     const now = state.dataAsOf;
     const in30 = new Date(now.getTime()+30*86400000);
@@ -893,7 +961,11 @@ const Agg = (function(){
     const byStatus = Core.mapToSortedArr(Core.groupCount(contracts, c=>c.status), true);
     const byType = Core.mapToSortedArr(Core.groupCount(contracts, c=>c.type), true);
 
-    const resignations = filteredLinked(state.resignations).filter(r=>r.status==='3. Đã duyệt' && Core.inYear(r.endDate, currentYear()));
+    const resignations = filteredLinked(state.resignations).filter(r=>r.status==='3. Đã duyệt' && Core.inDateRange(r.endDate, currentRange().from, currentRange().to));
+    // Nhân sự SẮP nghỉ việc: đơn đã duyệt nhưng ngày nghỉ chính thức vẫn ở tương lai
+    const upcomingResignations = filteredLinked(state.resignations)
+      .filter(r=>r.status==='3. Đã duyệt' && Core.isDate(r.endDate) && r.endDate>=now)
+      .sort((a,b)=>a.endDate-b.endDate);
     const reasonCounts = Core.mapToSortedArr(Core.groupCount(resignations, r=>r.reason||'(Không ghi)'), true);
     // nghỉ việc theo phòng ban / theo chi nhánh — join qua employee master để lấy chi nhánh (resignations tự thân không có field location)
     const resignByDept = Core.mapToSortedArr(Core.groupCount(resignations, r=>r.dept||'(Không rõ)'), true).slice(0,15);
@@ -915,15 +987,33 @@ const Agg = (function(){
       else if(months<12) tenureBands['6–12 tháng']++; else if(months<36) tenureBands['1–3 năm']++; else tenureBands['>3 năm']++;
     });
 
-    return { activeCount: active.length, contractsTotal: contracts.length, expiring30, expiring60, expired, byStatus, byType, resignationsTotal: resignations.length, reasonCounts, tenureBands, active, resignByDept, resignByLocation, resignByMonth, resignMonthKeys };
+    return { activeCount: active.length, contractsTotal: contracts.length, expiring30, expiring60, expired, byStatus, byType, resignationsTotal: resignations.length, reasonCounts, tenureBands, active, resignByDept, resignByLocation, resignByMonth, resignMonthKeys, byTitle, preboarding, upcomingResignations };
   }
 
   // ---------------- MODULE 3: TUYỂN DỤNG ----------------
   function recruitmentModule(state){
-    const y = currentYear();
-    const jobs = state.jobs.filter(j=>Core.inYear(j.postDate, y) && Core.inYear(j.startDate, y));
-    const candidates = state.candidates.filter(c=>Core.inYear(c.hireDate, y) && Core.inYear(c.interview1, y));
+    const range = currentRange();
+    const jobs = state.jobs.filter(j=>Core.inDateRange(j.postDate, range.from, range.to) && Core.inDateRange(j.startDate, range.from, range.to));
+    const jobById = {}; state.jobs.forEach(j=> jobById[j.id]=j);
+    const allCandidateStatuses = Core.uniq(state.candidates.map(c=>c.status)).sort();
+    const rs = FilterBar.getState().recruitStatus;
+    const fbState = FilterBar.getState();
+    let candidates = state.candidates
+      .filter(c=>Core.inDateRange(c.hireDate, range.from, range.to) && Core.inDateRange(c.interview1, range.from, range.to))
+      .filter(c=> rs==='all' || c.status===rs);
+    // Liên thông với bộ lọc chung (Phòng ban/Chi nhánh) qua job liên kết, để "Trạng thái ứng viên"
+    // và các chart khác của trang này thực sự tương tác được với bộ lọc Phòng ban/Chi nhánh toàn dashboard.
+    if(fbState.dept!=='all' || fbState.location!=='all'){
+      candidates = candidates.filter(c=>{
+        const job = jobById[c.jobId];
+        if(!job) return true; // không xác định được -> không loại, tránh ẩn nhầm dữ liệu
+        if(fbState.dept!=='all' && job.dept!==fbState.dept) return false;
+        if(fbState.location!=='all' && job.branch!==fbState.location) return false;
+        return true;
+      });
+    }
     const openJobs = jobs.filter(j=> !/đóng|hoàn thành|huỷ|hủy/i.test(j.status||''));
+    const neededTotal = jobs.reduce((s,j)=> s + Math.max(0, j.qty - j.filled), 0);
     // Funnel dựa trên trạng thái hiện tại của ứng viên (không phải lịch sử qua từng bước),
     // nên chỉ dùng các mốc đơn điệu giảm dần để tránh sai lệch tỷ lệ chuyển đổi.
     const funnelDef = [
@@ -933,7 +1023,6 @@ const Agg = (function(){
     ];
     const funnel = funnelDef.map(f=>({label:f.label, value: candidates.filter(f.test).length}));
     // Nguồn tuyển: ưu tiên kênh đăng tuyển của tin (join qua jobId) — chi tiết hơn nhị phân referral/khác
-    const jobById = {}; state.jobs.forEach(j=> jobById[j.id]=j);
     const bySource = Core.mapToSortedArr(Core.groupCount(candidates, c=>{
       if(c.referrer) return 'Giới thiệu nội bộ (Referral)';
       const job = jobById[c.jobId];
@@ -943,28 +1032,60 @@ const Agg = (function(){
     const hired = candidates.filter(c=>/chính thức/i.test(c.status||''));
     const rejected = candidates.filter(c=>/rớt|rot/i.test(c.status||''));
     const byDept = Core.mapToSortedArr(Core.groupCount(jobs, j=>j.dept), true);
-    return { totalJobs: jobs.length, openJobs: openJobs.length, totalCandidates: candidates.length, funnel, bySource, byStatus, hired: hired.length, rejected: rejected.length, byDept, jobs };
+
+    // Ứng viên "chính thức" trên hệ thống tuyển dụng nhưng KHÔNG có mặt trong bảng nhân sự thật
+    // (đối chiếu qua cột HoSoUngVien của ThongTinNhanVien) — dấu hiệu candidate rớt ở phút chót.
+    const employeeCandidateRefs = new Set(state.employees.map(e=>e.candidateRef).filter(Boolean));
+    const hiredButNotEmployee = hired.filter(c=> !employeeCandidateRefs.has(c.id));
+
+    // Nhu cầu tuyển (cần tuyển) theo tháng — dùng NgayBatDauCV (ngày cần có người), dữ liệu đầy đủ nhất ở job.
+    // Đã tuyển theo tháng — dùng ngày nhận việc của ứng viên (hireDate).
+    const neededByMonth = {}, hiredByMonth = {};
+    jobs.forEach(j=>{ if(!Core.isDate(j.startDate)) return; const k=Core.monthKey(j.startDate); neededByMonth[k]=(neededByMonth[k]||0)+Math.max(0,j.qty-j.filled); });
+    hired.forEach(c=>{ if(!Core.isDate(c.hireDate)) return; const k=Core.monthKey(c.hireDate); hiredByMonth[k]=(hiredByMonth[k]||0)+1; });
+    const demandMonthKeys = Core.uniq([...Object.keys(neededByMonth), ...Object.keys(hiredByMonth)]).sort();
+
+    // Ứng viên theo thời gian — dùng NgayTao (ngày tạo hồ sơ), trường có dữ liệu đầy đủ nhất
+    const appliedByMonth = {};
+    candidates.forEach(c=>{ if(!Core.isDate(c.appliedDate)) return; const k=Core.monthKey(c.appliedDate); if(!appliedByMonth[k]) appliedByMonth[k]=0; appliedByMonth[k]++; });
+    const appliedMonthKeys = Object.keys(appliedByMonth).sort();
+    return { totalJobs: jobs.length, openJobs: openJobs.length, totalCandidates: candidates.length, neededTotal, funnel, bySource, byStatus,
+      hired: hired.length, rejected: rejected.length, hiredButNotEmployee, byDept, jobs, candidates, allCandidateStatuses,
+      appliedByMonth, appliedMonthKeys, neededByMonth, hiredByMonth, demandMonthKeys };
   }
 
   // ---------------- MODULE 4: ĐƠN TỪ ----------------
   function requestsModule(state){
-    const y = currentYear();
-    const leave = filteredLinked(state.leave).filter(l=>Core.inYear(l.from, y));
-    const other = filteredLinked(state.otherRequests).filter(o=>Core.inYear(o.created, y));
+    const range = currentRange();
+    const allLeaveStatuses = Core.uniq(state.leave.map(l=>l.status)).sort();
+    const ls = FilterBar.getState().leaveStatus;
+    const leave = filteredLinked(state.leave).filter(l=>Core.inDateRange(l.from, range.from, range.to)).filter(l=> ls==='all' || l.status===ls);
+    const other = filteredLinked(state.otherRequests).filter(o=>Core.inDateRange(o.created, range.from, range.to));
     const approved = leave.filter(l=>l.status==='3. Đã duyệt');
     const pending = leave.filter(l=>/chờ duyệt/i.test(l.status||''));
     const rejected = leave.filter(l=>l.status==='4. Không duyệt');
     const byType = Core.mapToSortedArr(Core.groupCount(leave, l=>l.type), true);
+    const byStatus = Core.mapToSortedArr(Core.groupCount(leave, l=>l.status), true);
     const byDept = Core.mapToSortedArr(Core.groupCount(leave, l=>l.dept), true).slice(0,12);
     const byReason = Core.mapToSortedArr(Core.groupCount(leave.filter(l=>l.reason), l=>l.reason), true).slice(0,10);
     // SLA: created -> approvedAt in days
     const slaList = approved.filter(l=>l.created && l.approvedAt).map(l=>({...l, sla: Core.daysBetween(l.created,l.approvedAt)})).filter(l=>l.sla!==null && l.sla>=0);
     const avgSLA = slaList.length? Core.sum(slaList, l=>l.sla)/slaList.length : null;
     const slowSLA = slaList.filter(l=>l.sla>7).sort((a,b)=>b.sla-a.sla).slice(0,15);
-    // day-of-week peak
-    const dowNames = ['CN','T2','T3','T4','T5','T6','T7'];
-    const dowCount = [0,0,0,0,0,0,0];
-    leave.forEach(l=>{ if(l.from) dowCount[l.from.getDay()]++; });
+    // Đơn theo thời gian — 3 mức độ chi tiết: ngày / tuần / tháng
+    const byDay = {}, byWeek = {}, byMonthReq = {}, byYear = {};
+    const daysByDay = {}, daysByWeek = {}, daysByMonth = {}, daysByYear = {};
+    leave.forEach(l=>{
+      if(!l.from) return;
+      const dk = Core.dayKey(l.from); byDay[dk]=(byDay[dk]||0)+1; daysByDay[dk]=(daysByDay[dk]||0)+(l.days||0);
+      const wk = Core.isoWeekKey(l.from); byWeek[wk]=(byWeek[wk]||0)+1; daysByWeek[wk]=(daysByWeek[wk]||0)+(l.days||0);
+      const mk = Core.monthKey(l.from); byMonthReq[mk]=(byMonthReq[mk]||0)+1; daysByMonth[mk]=(daysByMonth[mk]||0)+(l.days||0);
+      const yk = String(l.from.getFullYear()); byYear[yk]=(byYear[yk]||0)+1; daysByYear[yk]=(daysByYear[yk]||0)+(l.days||0);
+    });
+    const dayKeys = Object.keys(byDay).sort();
+    const weekKeys = Object.keys(byWeek).sort();
+    const monthReqKeys = Object.keys(byMonthReq).sort();
+    const yearKeys = Object.keys(byYear).sort();
     const pendingOver7 = pending.filter(l=> l.created && Core.daysBetween(l.created, state.dataAsOf) > 7);
 
     // ---- SLA bottleneck analysis: theo người duyệt & theo phòng ban ----
@@ -997,19 +1118,26 @@ const Agg = (function(){
       else if(l.sla<=14) slaBuckets['8–14 ngày']++; else if(l.sla<=30) slaBuckets['15–30 ngày']++; else slaBuckets['>30 ngày']++;
     });
 
-    return { total: leave.length, approved: approved.length, pending: pending.length, rejected: rejected.length, byType, byDept, byReason, avgSLA, slowSLA, dowCount, dowNames, pendingOver7, otherTotal: other.length, slaByApprover, slaByDept, slaBuckets };
+    return { total: leave.length, approved: approved.length, pending: pending.length, rejected: rejected.length, byType, byStatus, byDept, byReason, avgSLA, slowSLA, byDay, byWeek, byMonthReq, byYear, daysByDay, daysByWeek, daysByMonth, daysByYear, dayKeys, weekKeys, monthReqKeys, yearKeys, pendingOver7, otherTotal: other.length, slaByApprover, slaByDept, slaBuckets, allLeaveStatuses, leave };
   }
 
   // ---------------- MODULE 5: CHẤM CÔNG ----------------
   function attendanceModule(state){
-    const y = currentYear();
-    const att = state.attendance.filter(a=>Core.inYear(a.date, y)).filter(FilterBar.passesLinked);
+    const range = currentRange();
+    const att0 = state.attendance.filter(a=>Core.inDateRange(a.date, range.from, range.to)).filter(FilterBar.passesLinked);
     const empById = {}; state.employees.forEach(e=> empById[e.id]=e);
-    const coveredIds = Core.uniq(att.map(a=>a.id));
     const totalActive = state.employees.filter(e=>e.status===ACTIVE).length;
     const fields = state.attMeta.fieldsFound || {};
-    const hasEarly = !!fields.kEarlyHrs, hasOt = !!fields.kOtHrs, hasConfirm = !!fields.kConfirmStatus,
+    const hasEarly = !!fields.kEarlyHrs, hasConfirm = !!fields.kConfirmStatus,
           hasCheckTimes = !!fields.kCheckInTime && !!fields.kCheckOutTime, hasCheckOutStatus = !!fields.kCheckOutStatus;
+
+    // "Tình trạng chấm công" lấy trực tiếp theo cột trạng thái gốc trong file (TrangThai),
+    // không tự suy diễn/gộp nhóm — đảm bảo khớp đúng với dữ liệu thật.
+    att0.forEach(a=>{ a.bucket = a.status || '(Không rõ)'; });
+    const allAttStatuses = Core.uniq(att0.map(a=>a.bucket)).sort();
+    const as = FilterBar.getState().attStatus;
+    const att = as==='all' ? att0 : att0.filter(a=>a.bucket===as);
+    const coveredIds = Core.uniq(att.map(a=>a.id));
 
     function parseTimeToHours(t){
       if(t===null||t===undefined) return null;
@@ -1019,18 +1147,27 @@ const Agg = (function(){
       if(m) return parseInt(m[1],10) + parseInt(m[2],10)/60;
       const n = Number(s); return isNaN(n) ? null : n; // Excel time serial fraction of day
     }
+    // "Đủ công" = có đầy đủ Check-in & Check-out (hoặc trạng thái check-in/out không báo thiếu).
+    // Dùng riêng cho KPI "Tỷ lệ chấm công đầy đủ", bảng nhân viên, và biểu đồ Xác nhận công —
+    // KHÔNG dùng để thay thế "Tình trạng chấm công" (chart đó luôn theo đúng trạng thái gốc).
+    function isFullyPresent(a){
+      const isAbsent = /vắng|absent|nghỉ/i.test((a.status||''));
+      if(isAbsent) return false;
+      if(hasCheckTimes) return !!(a.checkInTime && a.checkOutTime);
+      if(hasCheckOutStatus) return !!(a.checkInStatus && a.checkOutStatus && !/thiếu|chưa|missing/i.test(a.checkInStatus+''+a.checkOutStatus));
+      return true; // không đủ dữ liệu để đánh giá -> không tính là thiếu công
+    }
 
     const byEmployee = {};
-    att.forEach(a=>{ if(!byEmployee[a.id]) byEmployee[a.id]={id:a.id, name:a.name, days:0, lateDays:0, lateHoursTotal:0, earlyDays:0, earlyHoursTotal:0, otHoursTotal:0, absentDays:0};
+    att.forEach(a=>{ const emp = empById[a.id];
+      if(!byEmployee[a.id]) byEmployee[a.id]={id:a.id, name:a.name, dept:(emp&&emp.dept)||a.dept||'—', days:0, fullDays:0, notFullDays:0, absentDays:0};
       const rec = byEmployee[a.id]; rec.days++;
-      const st = (a.status||'')+'';
-      if(/vắng|absent|nghỉ/i.test(st)) rec.absentDays++;
-      if(a.lateHours && a.lateHours>0){ rec.lateDays++; rec.lateHoursTotal += a.lateHours; }
-      if(a.earlyHours && a.earlyHours>0){ rec.earlyDays++; rec.earlyHoursTotal += a.earlyHours; }
-      if(a.otHours) rec.otHoursTotal += a.otHours;
+      const isAbsent = /vắng|absent|nghỉ/i.test((a.status||''));
+      if(isAbsent) rec.absentDays++;
+      else if(isFullyPresent(a)) rec.fullDays++;
+      else rec.notFullDays++;
     });
-    const empList = Object.values(byEmployee).sort((a,b)=>b.lateHoursTotal-a.lateHoursTotal);
-    const empListByEarly = [...Object.values(byEmployee)].sort((a,b)=>b.earlyHoursTotal-a.earlyHoursTotal).filter(e=>e.earlyHoursTotal>0);
+    const empList = Object.values(byEmployee).sort((a,b)=>b.notFullDays-a.notFullDays);
     const totalRecords = att.length;
     const lateRecords = att.filter(a=>a.lateHours>0).length;
     const absentRecords = att.filter(a=>/vắng|absent|nghỉ/i.test((a.status||''))).length;
@@ -1038,160 +1175,127 @@ const Agg = (function(){
 
     // ---- Tỷ lệ chấm công đầy đủ (có cả check-in & check-out) ----
     let fullAttendanceRate = null;
-    if(hasCheckTimes){
-      const withBoth = att.filter(a=>a.checkInTime && a.checkOutTime).length;
-      fullAttendanceRate = totalRecords? withBoth/totalRecords*100 : null;
-    } else if(hasCheckOutStatus){
-      const withBoth = att.filter(a=> a.checkInStatus && a.checkOutStatus && !/thiếu|chưa|missing/i.test(a.checkInStatus+''+a.checkOutStatus)).length;
+    if(hasCheckTimes || hasCheckOutStatus){
+      const withBoth = att.filter(isFullyPresent).length;
       fullAttendanceRate = totalRecords? withBoth/totalRecords*100 : null;
     }
 
-    // ---- Tình trạng chấm công (donut) ----
-    const statusBuckets = {'Đủ công':0, 'Đi trễ / về sớm':0, 'Vắng mặt':0, 'Chưa chấm công':0};
-    att.forEach(a=>{
-      const isAbsent = /vắng|absent|nghỉ/i.test((a.status||''));
-      const missing = hasCheckTimes ? (!a.checkInTime && !a.checkOutTime) : false;
-      if(isAbsent) statusBuckets['Vắng mặt']++;
-      else if(missing) statusBuckets['Chưa chấm công']++;
-      else if((a.lateHours>0) || (a.earlyHours>0)) statusBuckets['Đi trễ / về sớm']++;
-      else statusBuckets['Đủ công']++;
-    });
+    // ---- Tình trạng chấm công (donut) — theo đúng trạng thái gốc trong dữ liệu ----
+    const statusBuckets = {};
+    att.forEach(a=>{ statusBuckets[a.bucket] = (statusBuckets[a.bucket]||0)+1; });
 
-    // trend by month (mở rộng: tổng giờ trễ/về sớm/OT + lượt OT)
-    const byMonth = {};
+    // ---- Xu hướng chấm công theo tháng: cột = số người chấm công (distinct), đường = tổng lượt ----
+    const monthAgg = {};
     att.forEach(a=>{ if(!a.date) return; const k=Core.monthKey(a.date);
-      if(!byMonth[k]) byMonth[k]={records:0,late:0,absent:0,lateHours:0,early:0,earlyHours:0,otHours:0,otCount:0};
-      const m = byMonth[k]; m.records++;
-      if(a.lateHours>0){ m.late++; m.lateHours+=a.lateHours; }
-      if(/vắng|absent|nghỉ/i.test((a.status||''))) m.absent++;
-      if(a.earlyHours>0){ m.early++; m.earlyHours+=a.earlyHours; }
-      if(a.otHours>0){ m.otCount++; m.otHours+=a.otHours; }
+      if(!monthAgg[k]) monthAgg[k]={records:0, people:new Set()};
+      monthAgg[k].records++; monthAgg[k].people.add(a.id);
     });
-    const monthKeys = Object.keys(byMonth).sort();
+    const monthKeys = Object.keys(monthAgg).sort();
+    const peopleByMonth = {}, recordsByMonth = {};
+    monthKeys.forEach(k=>{ peopleByMonth[k]=monthAgg[k].people.size; recordsByMonth[k]=monthAgg[k].records; });
+
+    // ---- Trạng thái chấm công theo tháng (dùng đúng trạng thái gốc) — vẫn giữ để dùng nơi khác nếu cần ----
+    const statusByMonth = {};
+    att.forEach(a=>{ if(!a.date) return; const k=Core.monthKey(a.date);
+      if(!statusByMonth[k]) statusByMonth[k]={};
+      statusByMonth[k][a.bucket] = (statusByMonth[k][a.bucket]||0)+1;
+    });
     // anomalous lateness: > 3 hours likely wrong-shift data entry
     const anomalousLate = att.filter(a=>a.lateHours>3);
 
-    // ---- breakdown theo phòng ban (join qua employee master, fallback field riêng) ----
+    // ---- breakdown theo phòng ban: trạng thái x phòng ban + giờ làm việc ----
     const deptMap = {};
     att.forEach(a=>{
       const emp = empById[a.id];
       const dept = (emp && emp.dept) || a.dept || '(Không rõ)';
-      if(!deptMap[dept]) deptMap[dept] = {dept, records:0, late:0, absent:0, early:0, otHours:0, workHoursSum:0, workHoursCount:0, employees:new Set()};
+      if(!deptMap[dept]) deptMap[dept] = {dept, records:0, statusCounts:{}, workHoursSum:0, workHoursCount:0, employees:new Set()};
       const d = deptMap[dept];
       d.records++; d.employees.add(a.id);
-      if(a.lateHours>0) d.late++;
-      if(/vắng|absent|nghỉ/i.test((a.status||''))) d.absent++;
-      if(a.earlyHours>0) d.early++;
-      if(a.otHours) d.otHours += a.otHours;
+      d.statusCounts[a.bucket] = (d.statusCounts[a.bucket]||0)+1;
       if(hasCheckTimes){
         const ci = parseTimeToHours(a.checkInTime), co = parseTimeToHours(a.checkOutTime);
         if(ci!==null && co!==null && co>ci){ d.workHoursSum += (co-ci); d.workHoursCount++; }
       }
     });
     const byDept = Object.values(deptMap).map(d=>({
-      dept: d.dept, empCount: d.employees.size, records: d.records,
-      lateRate: d.records? d.late/d.records*100 : 0,
-      absentRate: d.records? d.absent/d.records*100 : 0,
-      earlyRate: d.records? d.early/d.records*100 : 0,
-      otHours: d.otHours,
+      dept: d.dept, empCount: d.employees.size, records: d.records, statusCounts: d.statusCounts,
       avgWorkHours: d.workHoursCount? d.workHoursSum/d.workHoursCount : null,
-    })).sort((a,b)=>b.lateRate-a.lateRate);
-    const byDeptOt = [...byDept].filter(d=>d.otHours>0).sort((a,b)=>b.otHours-a.otHours);
+    })).sort((a,b)=>b.records-a.records).slice(0,12);
     const byDeptWorkHours = [...byDept].filter(d=>d.avgWorkHours!==null).sort((a,b)=>b.avgWorkHours-a.avgWorkHours);
 
-    // ---- pattern theo ngày trong tuần (trễ / vắng) ----
+    // ---- trạng thái theo ngày trong tuần + tổng lượt chấm công ----
     const dowNames = ['CN','T2','T3','T4','T5','T6','T7'];
-    const dowLate = [0,0,0,0,0,0,0], dowAbsent = [0,0,0,0,0,0,0], dowTotal=[0,0,0,0,0,0,0];
-    att.forEach(a=>{ if(!a.date) return; const d=a.date.getDay(); dowTotal[d]++; if(a.lateHours>0) dowLate[d]++; if(/vắng|absent|nghỉ/i.test((a.status||''))) dowAbsent[d]++; });
+    const dowStatusCounts = [{},{},{},{},{},{},{}], dowTotal=[0,0,0,0,0,0,0];
+    att.forEach(a=>{ if(!a.date) return; const d=a.date.getDay(); dowTotal[d]++; dowStatusCounts[d][a.bucket]=(dowStatusCounts[d][a.bucket]||0)+1; });
 
-    // ---- heatmap theo ngày trong tháng (mật độ bất thường: trễ + về sớm + vắng, gộp mọi tháng) ----
-    const domCounts = new Array(32).fill(0); // index 1..31
-    att.forEach(a=>{ if(!a.date) return;
-      const isIssue = (a.lateHours>0) || (a.earlyHours>0) || /vắng|absent|nghỉ/i.test((a.status||''));
-      if(isIssue) domCounts[a.date.getDate()]++;
+    // ---- Không đủ công theo phòng ban — cột: số người có ≥1 lượt không đủ công; đường: tổng số lần không đủ công ----
+    const notFullDeptMap = {};
+    att.filter(a=>!isFullyPresent(a) && !/vắng|absent|nghỉ/i.test((a.status||''))).forEach(a=>{
+      const emp = empById[a.id]; const dept = (emp && emp.dept) || a.dept || '(Không rõ)';
+      if(!notFullDeptMap[dept]) notFullDeptMap[dept] = {dept, people:new Set(), count:0};
+      notFullDeptMap[dept].people.add(a.id);
+      notFullDeptMap[dept].count++;
     });
-
-    // ---- xác nhận công theo phòng ban (stacked) ----
-    let confirmByDept = [];
-    if(hasConfirm){
-      const cMap = {};
-      att.forEach(a=>{
-        const emp = empById[a.id]; const dept = (emp && emp.dept) || a.dept || '(Không rõ)';
-        if(!cMap[dept]) cMap[dept] = {dept, confirmed:0, unconfirmed:0, partial:0};
-        const st = (a.confirmStatus||'')+'';
-        if(/thiếu/i.test(st)) cMap[dept].partial++;
-        else if(/chưa/i.test(st)) cMap[dept].unconfirmed++;
-        else if(/đã xác nhận|confirmed/i.test(st)) cMap[dept].confirmed++;
-      });
-      confirmByDept = Object.values(cMap).sort((a,b)=>(b.confirmed+b.unconfirmed+b.partial)-(a.confirmed+a.unconfirmed+a.partial)).slice(0,12);
-    }
-
-    // ---- dữ liệu bất thường (thiếu check-in/out, giờ trễ/OT bất thường) ----
-    const anomalies = [];
-    att.forEach(a=>{
-      const isAbsent = /vắng|absent|nghỉ/i.test((a.status||''));
-      if(isAbsent) return;
-      if(hasCheckTimes){
-        if(!a.checkInTime) anomalies.push({...a, issue:'Thiếu Check-in'});
-        else if(!a.checkOutTime) anomalies.push({...a, issue:'Thiếu Check-out'});
-      }
-      if(a.lateHours>3) anomalies.push({...a, issue:'Giờ trễ bất thường (>3h)'});
-      if(a.otHours>6) anomalies.push({...a, issue:'Giờ OT bất thường (>6h)'});
-    });
+    const notFullByDept = Object.values(notFullDeptMap).map(d=>({dept:d.dept, peopleCount:d.people.size, count:d.count}))
+      .sort((a,b)=>b.count-a.count).slice(0,12);
 
     return { coveredCount: coveredIds.length, totalActive, totalRecords, lateRecords, absentRecords, earlyRecords,
-      empList, empListByEarly, byMonth, monthKeys, anomalousLate, found: state.attMeta.found, byDept, byDeptOt, byDeptWorkHours,
-      dowNames, dowLate, dowAbsent, dowTotal, fullAttendanceRate, statusBuckets, domCounts, confirmByDept, anomalies,
-      hasEarly, hasOt, hasConfirm, hasCheckTimes };
+      empList, monthKeys, peopleByMonth, recordsByMonth, anomalousLate, found: state.attMeta.found, byDept, byDeptWorkHours,
+      dowNames, dowStatusCounts, dowTotal, fullAttendanceRate, statusBuckets, statusByMonth, notFullByDept,
+      hasEarly, hasConfirm, hasCheckTimes, allAttStatuses, records: att };
   }
 
   // ---------------- MODULE 6: ALERTS ----------------
   function alertsModule(state, ov, empMod, req, recruit, attMod){
     const alerts = [];
     if(empMod.expiring30.length>0){
-      alerts.push({sev:'high', title:'Hợp đồng sắp hết hạn trong 30 ngày', kpi: empMod.expiring30.length+' hợp đồng',
+      alerts.push({sev:'high', page:'p-nhansu', title:'Hợp đồng sắp hết hạn trong 30 ngày', kpi: empMod.expiring30.length+' hợp đồng',
         text:`Có <b>${empMod.expiring30.length}</b> hợp đồng sẽ hết hạn trong 30 ngày tới. Nếu không xử lý gia hạn kịp thời, nhân sự có thể nghỉ việc ngoài kế hoạch hoặc vi phạm quy định lao động. HR cần rà soát danh sách và làm việc với quản lý trực tiếp trước khi hết hạn.`});
     }
     if(ov.turnoverRate>15){
-      alerts.push({sev:'high', title:'Turnover rate vượt ngưỡng cảnh báo (15%)', kpi: Core.fmtPct(ov.turnoverRate),
+      alerts.push({sev:'high', page:'p-tongquan', title:'Turnover rate vượt ngưỡng cảnh báo (15%)', kpi: Core.fmtPct(ov.turnoverRate),
         text:`Tỷ lệ nghỉ việc hiện ở mức <b>${Core.fmtPct(ov.turnoverRate)}</b>, vượt ngưỡng khuyến nghị 15%. Chi phí tuyển dụng và đào tạo lại có thể tăng đáng kể. HR nên phân tích nguyên nhân theo phòng ban và đánh giá lại chính sách giữ chân nhân sự.`});
     }
     const earlyLeavers = empMod.tenureBands['<3 tháng']+empMod.tenureBands['3–6 tháng'];
     if(earlyLeavers>0){
-      alerts.push({sev:'med', title:'Nghỉ việc sớm (dưới 6 tháng thâm niên)', kpi: earlyLeavers+' người',
+      alerts.push({sev:'med', page:'p-nhansu', title:'Nghỉ việc sớm (dưới 6 tháng thâm niên)', kpi: earlyLeavers+' người',
         text:`<b>${earlyLeavers}</b> nhân viên nghỉ việc khi thâm niên dưới 6 tháng. Đây thường là dấu hiệu của vấn đề trong khâu tuyển dụng hoặc onboarding chứ không phải môi trường làm việc lâu dài. Nên rà soát lại quy trình hội nhập nhân viên mới.`});
     }
     if(req.avgSLA!==null && req.avgSLA>5){
-      alerts.push({sev:'med', title:'SLA duyệt đơn nghỉ phép chậm', kpi: Core.fmtNum1(req.avgSLA)+' ngày TB',
+      alerts.push({sev:'med', page:'p-donttu', title:'SLA duyệt đơn nghỉ phép chậm', kpi: Core.fmtNum1(req.avgSLA)+' ngày TB',
         text:`Thời gian duyệt đơn xin phép trung bình là <b>${Core.fmtNum1(req.avgSLA)} ngày</b>. Nếu vượt SLA nội bộ, nhân viên có thể phải chờ đợi lâu, ảnh hưởng đến kế hoạch cá nhân. HR nên rà soát người duyệt xử lý chậm.`});
     }
     if(req.slaByApprover.length>0 && req.slaByApprover[0].avg > (req.avgSLA||0)*3 && req.slaByApprover[0].avg>20){
       const top = req.slaByApprover[0];
-      alerts.push({sev:'high', title:'Người duyệt xử lý chậm bất thường', kpi: Core.fmtNum1(top.avg)+' ngày TB',
+      alerts.push({sev:'high', page:'p-donttu', title:'Người duyệt xử lý chậm bất thường', kpi: Core.fmtNum1(top.avg)+' ngày TB',
         text:`<b>${top.name}</b> có SLA duyệt đơn trung bình <b>${Core.fmtNum1(top.avg)} ngày</b> trên ${top.count} đơn — cao gấp nhiều lần mặt bằng chung (${Core.fmtNum1(req.avgSLA)} ngày). Đây là một điểm nghẽn (bottleneck) rõ rệt trong quy trình duyệt. HR nên kiểm tra lại phân quyền/khối lượng công việc của người này, hoặc xem xét phân quyền duyệt phụ.`});
     }
     if(req.slaByDept.length>0 && req.slaByDept[0].avg>20){
       const top = req.slaByDept[0];
-      alerts.push({sev:'med', title:'Phòng ban có SLA duyệt đơn chậm nhất', kpi: Core.fmtNum1(top.avg)+' ngày TB',
+      alerts.push({sev:'med', page:'p-donttu', title:'Phòng ban có SLA duyệt đơn chậm nhất', kpi: Core.fmtNum1(top.avg)+' ngày TB',
         text:`Phòng <b>${top.name}</b> có SLA duyệt đơn trung bình <b>${Core.fmtNum1(top.avg)} ngày</b> (${top.count} đơn), cao hơn hẳn khối Giáo viên/Trợ giảng. Nên kiểm tra quy trình phê duyệt riêng của khối văn phòng/kinh doanh.`});
     }
     if(req.pendingOver7.length>0){
-      alerts.push({sev:'med', title:'Đơn xin phép chờ duyệt quá 7 ngày', kpi: req.pendingOver7.length+' đơn',
+      alerts.push({sev:'med', page:'p-donttu', title:'Đơn xin phép chờ duyệt quá 7 ngày', kpi: req.pendingOver7.length+' đơn',
         text:`Có <b>${req.pendingOver7.length}</b> đơn xin phép đang chờ duyệt hơn 7 ngày. Cần nhắc người duyệt xử lý để tránh ảnh hưởng quyền lợi nhân viên.`});
     }
     if(recruit.totalCandidates>0 && recruit.totalCandidates<30){
-      alerts.push({sev:'low', title:'Dữ liệu tuyển dụng còn ít — độ tin cậy thống kê thấp', kpi: recruit.totalCandidates+' hồ sơ',
+      alerts.push({sev:'low', page:'p-tuyendung', title:'Dữ liệu tuyển dụng còn ít — độ tin cậy thống kê thấp', kpi: recruit.totalCandidates+' hồ sơ',
         text:`Chỉ có <b>${recruit.totalCandidates}</b> hồ sơ ứng viên trong hệ thống. Các chỉ số như Time-to-Hire, tỷ lệ nguồn tuyển hiệu quả... nên được xem là tham khảo, chưa đủ để ra quyết định chiến lược.`});
     }
     if(attMod.found && attMod.totalActive>0){
       const cov = (attMod.coveredCount/attMod.totalActive*100);
-      alerts.push({sev:'low', title:'Chấm công chỉ phủ một phần nhân sự', kpi: Core.fmtPct(cov)+' coverage',
+      alerts.push({sev:'low', page:'p-chamcong', title:'Chấm công chỉ phủ một phần nhân sự', kpi: Core.fmtPct(cov)+' coverage',
         text:`Dữ liệu chấm công hiện chỉ ghi nhận <b>${attMod.coveredCount}/${attMod.totalActive}</b> nhân viên đang làm việc (chủ yếu qua app, khối văn phòng/HQ). Các KPI Attendance/Late/Absence Rate KHÔNG đại diện cho toàn bộ ~89% lực lượng part-time (giáo viên/trợ giảng). Không nên dùng để đánh giá công ty-wide.`});
     }
     const suspendedRate = empMod.byStatus.find(s=>s.label==='Tạm dừng');
     if(suspendedRate && empMod.contractsTotal>0 && suspendedRate.value/empMod.contractsTotal>0.3){
-      alerts.push({sev:'low', title:'Tỷ trọng hợp đồng "Tạm dừng" cao', kpi: Core.fmtPct(suspendedRate.value/empMod.contractsTotal*100),
+      alerts.push({sev:'low', page:'p-nhansu', title:'Tỷ trọng hợp đồng "Tạm dừng" cao', kpi: Core.fmtPct(suspendedRate.value/empMod.contractsTotal*100),
         text:`${Core.fmtPct(suspendedRate.value/empMod.contractsTotal*100)} hợp đồng đang ở trạng thái "Tạm dừng". Cần làm rõ ý nghĩa nghiệp vụ (VD: nhân sự part-time nghỉ giữa mùa vụ) trước khi đưa vào các KPI về mức độ ổn định hợp đồng.`});
+    }
+    if(recruit.hiredButNotEmployee && recruit.hiredButNotEmployee.length>0){
+      alerts.push({sev:'med', page:'p-tuyendung', title:'Ứng viên "chính thức" nhưng không có trong bảng nhân sự', kpi: recruit.hiredButNotEmployee.length+' người',
+        text:`<b>${recruit.hiredButNotEmployee.length}</b> ứng viên đã ở trạng thái tuyển dụng "chính thức" nhưng không được tìm thấy trong bảng nhân sự thật (đối chiếu qua Hồ sơ ứng viên). Có thể là huỷ nhận việc phút chót hoặc lỗi đồng bộ dữ liệu giữa 2 hệ thống — nên rà soát.`});
     }
     alerts.sort((a,b)=>{ const order={high:0,med:1,low:2}; return order[a.sev]-order[b.sev]; });
     return alerts;
@@ -1234,6 +1338,125 @@ const Render = (function(){
     };
   }
 
+  // Nhãn số liệu vẽ trực tiếp lên chart (không dùng plugin ngoài, tự vẽ bằng canvas API).
+  // Data label chỉ hiện SỐ (không kèm đơn vị). Đơn vị hiện 1 lần duy nhất ở góc trên-phải chart.
+  // Biểu đồ tròn (donut/pie): hiện "số (phần trăm%)".
+  const dataLabelsPlugin = {
+    id: 'kdiDataLabels',
+    afterDatasetsDraw(chartInst, args, pluginOpts){
+      if(!pluginOpts || pluginOpts.enabled===false) return;
+      const {ctx} = chartInst;
+      const fmt = pluginOpts.formatter || (v=>Core.fmtNum(v));
+      const stackedTotal = !!pluginOpts.stackedTotal;
+      const horizontal = chartInst.options.indexAxis === 'y';
+      const stackDsIndexes = [];
+      chartInst.data.datasets.forEach((ds, i)=>{ if(ds.stack !== undefined) stackDsIndexes.push(i); });
+
+      chartInst.data.datasets.forEach((dataset, dsIndex)=>{
+        const meta = chartInst.getDatasetMeta(dsIndex);
+        if(!meta || meta.hidden) return;
+        const dsType = dataset.type || chartInst.config.type;
+        if(stackedTotal && dataset.stack !== undefined) return; // cột xếp chồng -> vẽ tổng riêng bên dưới, bỏ qua từng phần
+        const total = (dsType==='doughnut'||dsType==='pie') ? dataset.data.reduce((s,v)=> s+(Number(v)||0), 0) : 0;
+        meta.data.forEach((element, index)=>{
+          const raw = dataset.data[index];
+          if(raw===null || raw===undefined || raw===0) return;
+          let text;
+          if(dsType==='doughnut' || dsType==='pie'){
+            const pct = total>0 ? Math.round(raw/total*100) : 0;
+            text = `${fmt(raw, dataset, index)} (${pct}%)`;
+          } else {
+            text = fmt(raw, dataset, index);
+          }
+          ctx.save();
+          if(dsType==='doughnut' || dsType==='pie'){
+            const pos = element.tooltipPosition();
+            ctx.font = '700 10.5px Inter, "Segoe UI", sans-serif';
+            ctx.fillStyle = '#fff';
+            ctx.textAlign='center'; ctx.textBaseline='middle';
+            ctx.fillText(text, pos.x, pos.y);
+          } else if(dsType==='line'){
+            ctx.font = '600 10px Inter, "Segoe UI", sans-serif';
+            ctx.fillStyle = dataset.borderColor || '#4A5578';
+            ctx.textAlign='center'; ctx.textBaseline='bottom';
+            ctx.fillText(text, element.x, element.y-7);
+          } else if(horizontal){
+            ctx.font = '600 10px Inter, "Segoe UI", sans-serif';
+            ctx.fillStyle = '#4A5578';
+            ctx.textAlign = raw>=0 ? 'left' : 'right';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(text, element.x + (raw>=0?6:-6), element.y);
+          } else {
+            ctx.font = '600 10px Inter, "Segoe UI", sans-serif';
+            ctx.fillStyle = '#4A5578';
+            ctx.textAlign='center'; ctx.textBaseline = raw>=0 ? 'bottom':'top';
+            ctx.fillText(text, element.x, element.y + (raw>=0 ? -5 : 13));
+          }
+          ctx.restore();
+        });
+      });
+
+      // Cột xếp chồng: chỉ vẽ 1 nhãn TỔNG ở đầu cột (chi tiết từng phần xem khi hover / tooltip)
+      if(stackedTotal && stackDsIndexes.length>0){
+        const n = chartInst.getDatasetMeta(stackDsIndexes[0]).data.length;
+        for(let index=0; index<n; index++){
+          let total = 0, edgeVal = horizontal ? -Infinity : Infinity, anchorEl = null;
+          stackDsIndexes.forEach(dsIndex=>{
+            const dataset = chartInst.data.datasets[dsIndex];
+            const meta = chartInst.getDatasetMeta(dsIndex);
+            if(meta.hidden) return;
+            const raw = Number(dataset.data[index])||0;
+            total += raw;
+            const el = meta.data[index];
+            if(!el) return;
+            if(horizontal){ if(el.x > edgeVal){ edgeVal = el.x; anchorEl = el; } }
+            else { if(el.y < edgeVal){ edgeVal = el.y; anchorEl = el; } }
+          });
+          if(total===0 || !anchorEl) continue;
+          ctx.save();
+          ctx.font = '700 10.5px Inter, "Segoe UI", sans-serif';
+          ctx.fillStyle = '#154B98';
+          const text = fmt(total);
+          const area = chartInst.chartArea;
+          if(horizontal){
+            const textW = ctx.measureText(text).width;
+            if(anchorEl.x + 7 + textW > area.right){
+              ctx.textAlign='right'; ctx.fillStyle='#fff'; ctx.fillText(text, anchorEl.x-6, anchorEl.y);
+            } else {
+              ctx.textAlign='left'; ctx.fillText(text, anchorEl.x+7, anchorEl.y);
+            }
+            ctx.textBaseline='middle';
+          } else {
+            ctx.textAlign='center';
+            if(anchorEl.y - 16 < area.top){
+              ctx.textBaseline='top'; ctx.fillStyle='#fff'; ctx.fillText(text, anchorEl.x, anchorEl.y+4);
+            } else {
+              ctx.textBaseline='bottom'; ctx.fillText(text, anchorEl.x, anchorEl.y-6);
+            }
+          }
+          ctx.restore();
+        }
+      }
+
+      // Đơn vị tính — hiện 1 lần duy nhất, góc trên-phải khu vực vẽ chart
+      if(pluginOpts.unit){
+        const area = chartInst.chartArea;
+        if(area){
+          ctx.save();
+          ctx.font = '600 10px Inter, "Segoe UI", sans-serif';
+          ctx.fillStyle = '#98A2BE';
+          ctx.textAlign = 'right';
+          ctx.textBaseline = 'alphabetic';
+          ctx.fillText('ĐVT: '+pluginOpts.unit, area.right, Math.max(area.top-8, 10));
+          ctx.restore();
+        }
+      }
+    }
+  };
+  Chart.register(dataLabelsPlugin);
+
+  function unitSuffix(unit){ return unit ? ' '+unit : ''; }
+
   function barChart(canvasId, labels, values, opts){
     opts = opts||{};
     const baseColor = opts.color||Core.COLORS.blue;
@@ -1244,7 +1467,12 @@ const Render = (function(){
       options: {
         indexAxis: opts.horizontal ? 'y':'x',
         responsive:true, maintainAspectRatio:false,
-        plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:(ctx)=> ' '+Core.fmtNum(ctx.parsed[opts.horizontal?'x':'y']) } } },
+        layout: { padding: opts.horizontal? {right:38} : {top:22} },
+        plugins:{ legend:{display:false}, tooltip:{ callbacks:{
+            label:(ctx)=> ' '+Core.fmtNum(ctx.parsed[opts.horizontal?'x':'y'])+unitSuffix(opts.unit),
+            afterLabel: opts.tooltipExtra ? (ctx)=> opts.tooltipExtra(labels[ctx.dataIndex]) : undefined,
+          } },
+          kdiDataLabels:{ enabled: opts.dataLabels!==false, unit: opts.unit } },
         scales: { x:{ grid:{display: opts.horizontal}, border:{display:false}, ticks: opts.horizontal? {precision:0}: {} }, y:{ grid:{display: !opts.horizontal, color:'#EEF1F8'}, border:{display:false}, beginAtZero:true, ticks: !opts.horizontal? {precision:0}: {} } },
         ...clickHandlers(labels, opts),
       }
@@ -1253,24 +1481,81 @@ const Render = (function(){
 
   function stackedBarChart(canvasId, labels, series, opts){
     opts=opts||{};
+    const horizontal = !!opts.horizontal;
     return chart(canvasId, {
       type:'bar',
-      data:{ labels, datasets: series.map((s,i)=>({ label:s.label, data:s.data, backgroundColor: s.color||Core.PALETTE[i], borderRadius:4, maxBarThickness:26 })) },
-      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom', labels:{boxWidth:10,font:{size:11}}}},
-        scales:{ x:{stacked:true, grid:{display:false}, border:{display:false}}, y:{stacked:true, grid:{color:'#EEF1F8'}, border:{display:false}} },
+      data:{ labels, datasets: series.map((s,i)=>({ label:s.label, data:s.data, backgroundColor: s.color||Core.PALETTE[i], stack:'st', borderRadius:4, maxBarThickness:26 })) },
+      options:{ responsive:true, maintainAspectRatio:false, indexAxis: horizontal?'y':'x',
+        interaction:{ mode:'index', intersect:false },
+        plugins:{legend:{position:'bottom', labels:{boxWidth:10,font:{size:11}}},
+          tooltip:{ callbacks:{
+            label:(ctx)=> ` ${ctx.dataset.label}: ${Core.fmtNum(ctx.parsed[horizontal?'x':'y'])}${unitSuffix(opts.unit)}`,
+            footer:(items)=> 'Tổng: '+Core.fmtNum(items.reduce((s,it)=>s+(it.parsed[horizontal?'x':'y']||0),0))+unitSuffix(opts.unit),
+          } },
+          kdiDataLabels:{ enabled: opts.dataLabels!==false, unit: opts.unit, stackedTotal:true } },
+        scales:{ x:{stacked:true, grid:{display:horizontal}, border:{display:false}, ticks: horizontal?{precision:0}:{}}, y:{stacked:true, grid:{display:!horizontal, color:'#EEF1F8'}, border:{display:false}, ticks: !horizontal?{precision:0}:{}} },
         ...clickHandlers(labels, opts),
       }
     });
   }
 
-  function comboChart(canvasId, labels, bars, line){
+  // Cột xếp chồng theo từng nhóm (vd: trạng thái) + 1 đường tổng (vd: tổng lượt).
+  // Đường tổng KHÔNG cộng dồn vào cột (dataset riêng, chỉ dùng chung trục y).
+  function stackedBarWithLine(canvasId, labels, barSeries, lineSeries, opts){
+    opts=opts||{};
+    return chart(canvasId, {
+      data:{ labels, datasets:[
+        ...barSeries.map((s,i)=>({ type:'bar', label:s.label, data:s.data, backgroundColor: s.color||Core.PALETTE[i], stack:'st', borderRadius:3, maxBarThickness:24, order:2 })),
+        { type:'line', label:lineSeries.label, data:lineSeries.data, borderColor:Core.COLORS.blueDark, backgroundColor:Core.COLORS.blueDark, tension:0.3, pointRadius:3, borderWidth:2.5, order:1 },
+      ]},
+      options:{ responsive:true, maintainAspectRatio:false,
+        interaction:{ mode:'index', intersect:false },
+        plugins:{legend:{position:'bottom', labels:{boxWidth:10,font:{size:11}}},
+          tooltip:{ callbacks:{
+            label:(ctx)=> ` ${ctx.dataset.label}: ${Core.fmtNum(ctx.parsed.y)}${unitSuffix(opts.unit)}`,
+            footer:(items)=>{ const barsOnly = items.filter(it=>it.dataset.stack!==undefined); return 'Tổng cột: '+Core.fmtNum(barsOnly.reduce((s,it)=>s+(it.parsed.y||0),0))+unitSuffix(opts.unit); },
+          } },
+          kdiDataLabels:{ enabled: opts.dataLabels!==false, unit: opts.unit, stackedTotal:true } },
+        scales:{ x:{stacked:true, grid:{display:false}, border:{display:false}}, y:{stacked:true, grid:{color:'#EEF1F8'}, border:{display:false}} },
+      }
+    });
+  }
+
+  function comboChart(canvasId, labels, bars, line, opts){
+    opts=opts||{};
     return chart(canvasId, {
       data:{ labels, datasets:[
         {type:'bar', label:bars.label, data:bars.data, backgroundColor: bars.data.map(v=> v>=0?Core.COLORS.blue:Core.COLORS.red), borderRadius:4, maxBarThickness:18, order:2},
         {type:'line', label:line.label, data:line.data, borderColor:Core.COLORS.amberDark, backgroundColor:Core.COLORS.amberDark, tension:0.35, pointRadius:2, borderWidth:2.5, order:1}
       ]},
-      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom', labels:{boxWidth:10,font:{size:11}}}},
+      options:{ responsive:true, maintainAspectRatio:false, layout:{padding:{top:20}},
+        plugins:{ legend:{position:'bottom', labels:{boxWidth:10,font:{size:11}}},
+          tooltip:{ callbacks:{ label:(ctx)=> ` ${ctx.dataset.label}: ${Core.fmtNum(ctx.parsed.y)}${unitSuffix(ctx.datasetIndex===0?opts.barUnit:opts.lineUnit)}` } },
+          kdiDataLabels:{ enabled: opts.dataLabels!==false } },
         scales:{ x:{grid:{display:false}, border:{display:false}}, y:{grid:{color:'#EEF1F8'}, border:{display:false}} } }
+    });
+  }
+
+  // Nhiều cột đứng CẠNH NHAU (không xếp chồng, không cộng dồn) theo mỗi mốc thời gian, + 1 đường tổng hợp riêng.
+  function groupedBarWithLine(canvasId, labels, barSeries, lineSeries, opts){
+    opts=opts||{};
+    const dualAxis = !!opts.dualAxis;
+    return chart(canvasId, {
+      data:{ labels, datasets:[
+        ...barSeries.map((s,i)=>({ type:'bar', label:s.label, data:s.data, backgroundColor: s.color||Core.PALETTE[i], borderRadius:4, maxBarThickness:16, order:2, yAxisID:'y' })),
+        { type:'line', label:lineSeries.label, data:lineSeries.data, borderColor:Core.COLORS.amberDark, backgroundColor:Core.COLORS.amberDark, tension:0.3, pointRadius:2, borderWidth:2.5, order:1, yAxisID: dualAxis?'y1':'y' },
+      ]},
+      options:{ responsive:true, maintainAspectRatio:false, layout:{padding:{top:20}},
+        plugins:{ legend:{position:'bottom', labels:{boxWidth:10,font:{size:11}}},
+          tooltip:{ callbacks:{ label:(ctx)=> ` ${ctx.dataset.label}: ${Core.fmtNum(ctx.parsed.y)}${unitSuffix(ctx.dataset.yAxisID==='y1'?opts.lineUnit:opts.unit)}` } },
+          kdiDataLabels:{ enabled: opts.dataLabels!==false, unit: dualAxis?null:opts.unit } },
+        scales: dualAxis ? {
+          x:{grid:{display:false}, border:{display:false}},
+          y:{ position:'left', grid:{color:'#EEF1F8'}, border:{display:false}, title:{display:true, text:opts.unit||'', font:{size:10}} },
+          y1:{ position:'right', grid:{display:false}, border:{display:false}, title:{display:true, text:opts.lineUnit||'', font:{size:10}} },
+        } : {
+          x:{grid:{display:false}, border:{display:false}}, y:{grid:{color:'#EEF1F8'}, border:{display:false}}
+        } }
     });
   }
 
@@ -1280,17 +1565,24 @@ const Render = (function(){
     return chart(canvasId, {
       type:'doughnut',
       data:{ labels, datasets:[{ data: values, backgroundColor: bg, borderWidth:2, borderColor:'#fff' }] },
-      options:{ responsive:true, maintainAspectRatio:false, cutout:'68%', plugins:{ legend:{ position:'right', labels:{boxWidth:10, font:{size:11}} } },
+      options:{ responsive:true, maintainAspectRatio:false, cutout:'42%',
+        plugins:{ legend:{ position:'right', labels:{boxWidth:10, font:{size:11}} },
+          tooltip:{ callbacks:{ label:(ctx)=> ` ${ctx.label}: ${Core.fmtNum(ctx.parsed)}${unitSuffix(opts.unit)}` } },
+          kdiDataLabels:{ enabled: opts.dataLabels!==false, unit: opts.unit } },
         ...clickHandlers(labels, opts),
       }
     });
   }
 
   function lineChart(canvasId, labels, series, opts){
+    opts=opts||{};
     return chart(canvasId, {
       type:'line',
       data:{ labels, datasets: series.map((s,i)=>({ label:s.label, data:s.data, borderColor:s.color||Core.PALETTE[i], backgroundColor:(s.color||Core.PALETTE[i])+'22', fill: !!s.fill, tension:0.35, pointRadius:2, borderWidth:2.4 })) },
-      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom', labels:{boxWidth:10,font:{size:11}}}},
+      options:{ responsive:true, maintainAspectRatio:false, layout:{padding:{top:20}},
+        plugins:{legend:{position:'bottom', labels:{boxWidth:10,font:{size:11}}},
+          tooltip:{ callbacks:{ label:(ctx)=> ` ${ctx.dataset.label}: ${Core.fmtNum(ctx.parsed.y)}${unitSuffix(opts.unit)}` } },
+          kdiDataLabels:{ enabled: opts.dataLabels!==false, unit: opts.unit } },
         scales:{ x:{grid:{display:false}, border:{display:false}}, y:{grid:{color:'#EEF1F8'}, border:{display:false}} } }
     });
   }
@@ -1313,17 +1605,27 @@ const Render = (function(){
     }
   }
 
-  function insightList(containerId, items){
+  const PAGE_LABELS = { 'p-tongquan':'Tổng quan', 'p-nhansu':'Nhân sự', 'p-tuyendung':'Tuyển dụng', 'p-donttu':'Đơn từ', 'p-chamcong':'Chấm công', 'p-alerts':'HR Alerts' };
+
+  function insightList(containerId, items, opts){
+    opts = opts||{};
     const c = Core.$(containerId); if(!c) return;
     if(items.length===0){ c.innerHTML = `<div class="empty-note">Không phát hiện rủi ro nổi bật với bộ lọc hiện tại. ✓</div>`; return; }
-    c.innerHTML = items.map(a=>`
-      <div class="insight-card">
+    c.innerHTML = items.map((a,i)=>`
+      <div class="insight-card" data-idx="${i}" ${a.page?'style="cursor:pointer;"':''}>
         <div class="insight-flag sev-${a.sev}">${a.sev==='high'?'!':(a.sev==='med'?'●':'i')}</div>
         <div class="insight-body">
           <div class="insight-title">${a.title} <span class="tag" style="float:right;">${a.kpi}</span></div>
+          ${a.page ? `<div class="chip" style="margin-bottom:6px;display:inline-block;">📍 ${PAGE_LABELS[a.page]||a.page} — bấm để xem</div>` : ''}
           <div class="insight-otile">${a.text}</div>
         </div>
       </div>`).join('');
+    if(opts.onNavigate){
+      c.querySelectorAll('.insight-card').forEach(card=>{
+        const item = items[parseInt(card.dataset.idx,10)];
+        if(item.page) card.onclick = ()=> opts.onNavigate(item.page);
+      });
+    }
   }
 
   function funnel(containerId, steps){
@@ -1362,7 +1664,71 @@ const Render = (function(){
       <div class="chip-row"><span class="chip">Nhạt = ít bất thường</span><span class="chip" style="background:rgba(214,69,90,0.75); color:#fff;">Đậm = nhiều bất thường</span></div>`;
   }
 
-  return { kpiGrid, barChart, stackedBarChart, comboChart, donutChart, lineChart, table, insightList, funnel, heatmapDayOfMonth };
+  return { kpiGrid, barChart, stackedBarChart, stackedBarWithLine, comboChart, groupedBarWithLine, donutChart, lineChart, table, insightList, funnel, heatmapDayOfMonth };
+})();
+</script>
+
+<script>
+/* ============================================================
+   DETAIL TABLE — dùng chung cho mọi trang: bảng dữ liệu chi tiết
+   có thể lọc (đã lọc sẵn theo bộ lọc trang), chọn/bỏ cột hiển thị,
+   và tải xuống CSV toàn bộ dữ liệu đang lọc (không giới hạn 300 dòng
+   hiển thị trên màn hình).
+   ============================================================ */
+const DetailTable = (function(){
+  const visibleState = {}; // tableId -> Set(keys hiện đang bật)
+
+  function csvEscape(v){
+    if(v===null||v===undefined) return '';
+    const s = String(v);
+    return /[",\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s;
+  }
+  function downloadCSV(filename, columns, rows){
+    const header = columns.map(c=>csvEscape(c.label)).join(',');
+    const lines = rows.map(r=> columns.map(c=> csvEscape(c.render?c.render(r):r[c.key])).join(','));
+    const csv = '\uFEFF'+[header, ...lines].join('\r\n');
+    const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href=url; a.download=filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  // opts: { tableId, filename, rows, columns:[{key,label,render,default}] }
+  function render(containerId, opts){
+    const container = Core.$(containerId); if(!container) return;
+    const id = opts.tableId;
+    if(!visibleState[id]){
+      visibleState[id] = new Set(opts.columns.filter(c=>c.default).map(c=>c.key));
+    }
+    const visible = visibleState[id];
+    const chipsHtml = opts.columns.map(c=>
+      `<span class="chip col-chip ${visible.has(c.key)?'active':''}" data-key="${c.key}">${visible.has(c.key)?'✓ ':'+ '}${c.label}</span>`
+    ).join('');
+    const total = opts.rows.length;
+    const shown = Math.min(total, 300);
+    container.innerHTML = `
+      <div class="panel-head">
+        <div><h3>Dữ liệu chi tiết</h3><div class="panel-sub">${Core.fmtNum(total)} dòng theo bộ lọc hiện tại — bấm cột bên dưới để thêm/bớt</div></div>
+        <button class="btn btn-ghost" id="${id}-dl" style="font-size:11.5px;padding:7px 12px;white-space:nowrap;">⬇ Tải CSV (${Core.fmtNum(total)} dòng)</button>
+      </div>
+      <div class="chip-row" id="${id}-cols" style="margin:0 0 12px 0;">${chipsHtml}</div>
+      <div class="tbl-scroll" id="${id}-table"></div>
+      ${total>shown ? `<div class="empty-note">Hiển thị ${shown}/${Core.fmtNum(total)} dòng đầu trên màn hình — bấm "Tải CSV" để lấy đầy đủ.</div>` : ''}
+    `;
+    const activeCols = opts.columns.filter(c=>visible.has(c.key));
+    Render.table(`${id}-table`, activeCols, opts.rows.slice(0,300), {emptyText:'Không có dữ liệu phù hợp với bộ lọc hiện tại.'});
+    container.querySelectorAll('.col-chip').forEach(chip=>{
+      chip.onclick = ()=>{
+        const k = chip.dataset.key;
+        if(visible.has(k)) visible.delete(k); else visible.add(k);
+        render(containerId, opts);
+      };
+    });
+    Core.$(`${id}-dl`).onclick = ()=> downloadCSV(opts.filename, activeCols.length?activeCols:opts.columns, opts.rows);
+  }
+
+  return { render };
 })();
 </script>
 
@@ -1398,11 +1764,18 @@ const Pages = (function(){
         <div class="panel"><div class="panel-head"><h3>Thâm niên làm việc</h3></div><div class="chart-wrap h220"><canvas id="ov-tenure"></canvas></div></div>
         <div class="panel"><div class="panel-head"><h3>Loại hợp đồng</h3></div><div class="chart-wrap h220"><canvas id="ov-contracttype"></canvas></div></div>
       </div>
+
+      <div class="section-head"><h2>Dữ liệu chi tiết</h2></div>
+      <div class="panel" id="ov-detail"></div>
     </div>
 
     <!-- ============ PAGE 2: NHÂN SỰ ============ -->
     <div class="page" id="p-nhansu">
       <div class="kpi-grid" id="hs-kpis"></div>
+
+      <div class="section-head"><h2>Cơ cấu theo chức danh</h2><span class="section-sub">Top 15 chức danh theo số lượng nhân viên đang làm việc</span></div>
+      <div class="panel"><div class="chart-wrap h300"><canvas id="hs-title"></canvas></div></div>
+
       <div class="grid grid-2" style="margin-top:16px;">
         <div class="panel"><div class="panel-head"><h3>Hợp đồng theo trạng thái</h3></div><div class="chart-wrap h240"><canvas id="hs-status"></canvas></div></div>
         <div class="panel"><div class="panel-head"><h3>Hợp đồng theo loại</h3></div><div class="chart-wrap h240"><canvas id="hs-type"></canvas></div></div>
@@ -1426,32 +1799,60 @@ const Pages = (function(){
         <div class="panel"><div class="panel-head"><h3>Nghỉ việc theo phòng ban</h3><span class="panel-badge">💡 Bấm để lọc</span></div><div class="chart-wrap h280"><canvas id="hs-resign-dept"></canvas></div></div>
         <div class="panel"><div class="panel-head"><h3>Nghỉ việc theo chi nhánh</h3><span class="panel-badge">💡 Bấm để lọc</span></div><div class="chart-wrap h280"><canvas id="hs-resign-location"></canvas></div></div>
       </div>
+
+      <div class="section-head"><h2>Nhân sự sắp nghỉ việc</h2><span class="section-sub">Đơn thôi việc đã duyệt, ngày nghỉ chính thức vẫn ở tương lai</span></div>
+      <div class="panel"><div class="tbl-scroll" id="hs-upcoming-resign-table"></div></div>
     </div>
 
     <!-- ============ PAGE 3: TUYỂN DỤNG ============ -->
     <div class="page" id="p-tuyendung">
+      <div class="filterbar" id="tdFilterHost" style="margin-bottom:14px;"></div>
       <div class="callout warn"><span class="ic">⚠️</span><div><b>Dữ liệu tuyển dụng còn mỏng</b> — các chỉ số dưới đây mang tính tham khảo, chưa đủ mẫu để kết luận chiến lược.</div></div>
       <div class="kpi-grid" id="td-kpis"></div>
       <div class="grid grid-2" style="margin-top:16px;">
         <div class="panel"><div class="panel-head"><h3>Funnel tuyển dụng</h3><div class="panel-sub">Hồ sơ → Duyệt → Đậu PV → Offer/Chính thức</div></div><div id="td-funnel"></div></div>
-        <div class="panel"><div class="panel-head"><h3>Trạng thái ứng viên hiện tại</h3></div><div class="chart-wrap h260"><canvas id="td-status"></canvas></div></div>
+        <div class="panel"><div class="panel-head"><h3>Trạng thái ứng viên hiện tại</h3><span class="panel-badge">💡 Bấm để lọc</span></div><div class="chart-wrap h260"><canvas id="td-status"></canvas></div></div>
       </div>
       <div class="section-head"><h2>Nhu cầu tuyển dụng theo phòng ban</h2></div>
       <div class="panel"><div class="panel-head"><h3 style="font-size:11px;color:var(--ink-faint);font-weight:600;">💡 Bấm cột để lọc theo phòng ban</h3></div><div class="chart-wrap h260"><canvas id="td-dept"></canvas></div></div>
 
+      <div class="section-head"><h2>Nhu cầu tuyển vs. Đã tuyển theo thời gian</h2><span class="section-sub">Cột: số vị trí cần tuyển (theo ngày cần có người) · Đường: số ứng viên đã nhận việc</span></div>
+      <div class="panel"><div class="chart-wrap h260"><canvas id="td-demand-trend"></canvas></div></div>
+
       <div class="section-head"><h2>Đánh giá nguồn tuyển dụng</h2><span class="section-sub">Xác định nguồn hiệu quả nhất để tối ưu chi phí tuyển dụng</span></div>
       <div class="panel"><div class="chart-wrap h280"><canvas id="td-source"></canvas></div></div>
 
+      <div class="section-head"><h2>Ứng viên theo thời gian</h2><span class="section-sub">Số hồ sơ ứng tuyển nhận được theo tháng (theo ngày tạo hồ sơ)</span></div>
+      <div class="panel"><div class="chart-wrap h260"><canvas id="td-applied-trend"></canvas></div></div>
+
+      <div class="callout warn" id="td-notemployee-callout" style="display:none;"></div>
+
       <div class="section-head"><h2>Danh sách vị trí đang tuyển</h2></div>
       <div class="panel"><div class="tbl-scroll" id="td-jobs-table"></div></div>
+
+      <div class="section-head"><h2>Dữ liệu chi tiết</h2></div>
+      <div class="panel" id="td-detail"></div>
     </div>
 
     <!-- ============ PAGE 4: ĐƠN TỪ ============ -->
     <div class="page" id="p-donttu">
+      <div class="filterbar" id="dtFilterHost" style="margin-bottom:14px;"></div>
       <div class="kpi-grid" id="dt-kpis"></div>
       <div class="grid grid-2" style="margin-top:16px;">
         <div class="panel"><div class="panel-head"><h3>Đơn theo loại</h3></div><div class="chart-wrap h240"><canvas id="dt-type"></canvas></div></div>
-        <div class="panel"><div class="panel-head"><h3>Đơn theo ngày trong tuần</h3><div class="panel-sub">Xác định ngày cao điểm xin nghỉ</div></div><div class="chart-wrap h240"><canvas id="dt-dow"></canvas></div></div>
+        <div class="panel"><div class="panel-head"><h3>Đơn theo trạng thái</h3><span class="panel-badge">💡 Bấm để lọc</span></div><div class="chart-wrap h240"><canvas id="dt-status-chart"></canvas></div></div>
+      </div>
+      <div class="panel" style="margin-top:14px;">
+        <div class="panel-head">
+          <div><h3>Đơn theo thời gian</h3><div class="panel-sub">Xác định giai đoạn cao điểm xin nghỉ</div></div>
+          <div class="chip-row" id="dtGranToggle" style="margin-top:0;">
+            <span class="chip gran-chip" data-gran="day">Ngày</span>
+            <span class="chip gran-chip" data-gran="week">Tuần</span>
+            <span class="chip gran-chip active" data-gran="month">Tháng</span>
+            <span class="chip gran-chip" data-gran="year">Năm</span>
+          </div>
+        </div>
+        <div class="chart-wrap h260"><canvas id="dt-time-trend"></canvas></div>
       </div>
       <div class="section-head"><h2>Phân bổ theo phòng ban</h2></div>
       <div class="panel"><div class="panel-head"><h3 style="font-size:11px;color:var(--ink-faint);font-weight:600;">💡 Bấm cột để lọc theo phòng ban</h3></div><div class="chart-wrap h280"><canvas id="dt-dept"></canvas></div></div>
@@ -1467,55 +1868,52 @@ const Pages = (function(){
       <div class="section-head"><h2>Approval SLA — đơn xử lý chậm (&gt; 7 ngày)</h2></div>
       <div class="panel"><div class="tbl-scroll" id="dt-slow-table"></div></div>
 
-      <div class="section-head"><h2>Phân tích điểm nghẽn SLA</h2><span class="section-sub">Xác định người duyệt / phòng ban xử lý chậm nhất</span></div>
-      <div class="grid grid-2">
-        <div class="panel"><div class="panel-head"><h3>SLA trung bình theo người duyệt</h3><div class="panel-sub">Chỉ tính người duyệt ≥ 10 đơn</div></div><div class="tbl-scroll" id="dt-approver-table"></div></div>
-        <div class="panel"><div class="panel-head"><h3>SLA trung bình theo phòng ban</h3><div class="panel-sub">Chỉ tính phòng ban ≥ 10 đơn</div></div><div class="chart-wrap h300"><canvas id="dt-sla-dept"></canvas></div></div>
+      <div class="section-head">
+        <h2>Phân tích điểm nghẽn SLA</h2>
+        <button class="btn btn-ghost" id="dtSlaToggleBtn" style="font-size:11.5px;padding:6px 12px;">👁 Xem chi tiết</button>
       </div>
+      <div id="dtSlaSection" style="display:none;">
+        <div class="section-sub" style="margin:-6px 0 10px 0;">Xác định người duyệt / phòng ban xử lý chậm nhất</div>
+        <div class="grid grid-2">
+          <div class="panel"><div class="panel-head"><h3>SLA trung bình theo người duyệt</h3><div class="panel-sub">Chỉ tính người duyệt ≥ 10 đơn</div></div><div class="tbl-scroll" id="dt-approver-table"></div></div>
+          <div class="panel"><div class="panel-head"><h3>SLA trung bình theo phòng ban</h3><div class="panel-sub">Chỉ tính phòng ban ≥ 10 đơn</div></div><div class="chart-wrap h300"><canvas id="dt-sla-dept"></canvas></div></div>
+        </div>
+      </div>
+
+      <div class="section-head"><h2>Dữ liệu chi tiết</h2></div>
+      <div class="panel" id="dt-detail"></div>
     </div>
 
     <!-- ============ PAGE 5: CHẤM CÔNG ============ -->
     <div class="page" id="p-chamcong">
+      <div class="filterbar" id="ccFilterHost" style="margin-bottom:14px;"></div>
       <div class="callout bad" id="att-coverage-callout"></div>
       <div class="kpi-grid" id="cc-kpis"></div>
 
-      <div class="section-head"><h2>Tình trạng chấm công</h2><span class="section-sub">Phân loại toàn bộ lượt chấm công đang lọc</span></div>
+      <div class="section-head"><h2>Tình trạng &amp; xu hướng chấm công</h2><span class="section-sub">Theo đúng trạng thái gốc trong dữ liệu</span></div>
       <div class="grid grid-2">
-        <div class="panel"><div class="panel-head"><h3>Tình trạng chấm công</h3></div><div class="chart-wrap h260"><canvas id="cc-status-donut"></canvas></div></div>
-        <div class="panel"><div class="panel-head"><h3>Xu hướng chấm công theo tháng</h3></div><div class="chart-wrap h260"><canvas id="cc-trend"></canvas></div></div>
+        <div class="panel"><div class="panel-head"><h3>Xu hướng chấm công theo tháng</h3><div class="panel-sub">Cột: số người chấm công · Đường: tổng lượt chấm công</div></div><div class="chart-wrap h220"><canvas id="cc-trend"></canvas></div></div>
+        <div class="panel"><div class="panel-head"><h3>Tình trạng chấm công</h3><span class="panel-badge">💡 Bấm để lọc</span></div><div class="chart-wrap h220"><canvas id="cc-status-donut"></canvas></div></div>
       </div>
-      <div class="callout warn" style="margin-top:14px;" id="cc-anomaly-callout"></div>
-
-      <div class="section-head"><h2>Phân tích đi trễ / về sớm</h2><span class="section-sub">Số lượt và tổng thời gian theo tháng</span></div>
-      <div class="grid grid-2">
-        <div class="panel"><div class="panel-head"><h3>Đi trễ theo tháng</h3></div><div class="chart-wrap h260"><canvas id="cc-late-trend"></canvas></div></div>
-        <div class="panel"><div class="panel-head"><h3>Về sớm theo tháng</h3></div><div class="chart-wrap h260" id="cc-early-trend-wrap"><canvas id="cc-early-trend"></canvas></div></div>
-      </div>
+      <div class="callout warn" style="margin-top:12px;" id="cc-anomaly-callout"></div>
 
       <div class="section-head"><h2>Phân tích theo phòng ban &amp; ngày trong tuần</h2><span class="section-sub">Nhóm nhân viên có dữ liệu chấm công</span></div>
       <div class="grid grid-2">
-        <div class="panel"><div class="panel-head"><h3>Tỷ lệ trễ/vắng/về sớm theo phòng ban</h3></div><div class="tbl-scroll" id="cc-dept-table"></div></div>
-        <div class="panel"><div class="panel-head"><h3>Trễ/vắng theo ngày trong tuần</h3><div class="panel-sub">Xác định ngày cao điểm</div></div><div class="chart-wrap h280"><canvas id="cc-dow"></canvas></div></div>
+        <div class="panel"><div class="panel-head"><h3>Trạng thái chấm công theo phòng ban</h3></div><div class="chart-wrap h220"><canvas id="cc-dept-status"></canvas></div></div>
+        <div class="panel"><div class="panel-head"><h3>Trạng thái theo ngày trong tuần</h3><div class="panel-sub">Cột: từng trạng thái · Đường: tổng lượt chấm công</div></div><div class="chart-wrap h220"><canvas id="cc-dow"></canvas></div></div>
       </div>
 
-      <div class="section-head"><h2>Thời gian làm việc &amp; OT</h2></div>
-      <div class="grid grid-2">
-        <div class="panel"><div class="panel-head"><h3>Giờ làm trung bình theo phòng ban</h3></div><div class="chart-wrap h260" id="cc-workhours-wrap"><canvas id="cc-workhours"></canvas></div></div>
-        <div class="panel"><div class="panel-head"><h3>OT theo tháng</h3></div><div class="chart-wrap h260" id="cc-ot-trend-wrap"><canvas id="cc-ot-trend"></canvas></div></div>
-      </div>
-      <div class="panel" style="margin-top:14px;"><div class="panel-head"><h3>OT theo phòng ban</h3></div><div class="chart-wrap h260" id="cc-ot-dept-wrap"><canvas id="cc-ot-dept"></canvas></div></div>
+      <div class="section-head"><h2>Thời gian làm việc</h2></div>
+      <div class="panel"><div class="panel-head"><h3>Giờ làm trung bình theo phòng ban</h3><div class="panel-sub">Rê chuột để xem số người chấm công của phòng ban</div></div><div class="chart-wrap h220" id="cc-workhours-wrap"><canvas id="cc-workhours"></canvas></div></div>
 
-      <div class="section-head"><h2>Xác nhận công</h2><span class="section-sub">Đảm bảo dữ liệu công hoàn tất trước khi chốt lương</span></div>
-      <div class="panel" id="cc-confirm-wrap"><div class="chart-wrap h280"><canvas id="cc-confirm"></canvas></div></div>
+      <div class="section-head"><h2>Không đủ công theo phòng ban</h2><span class="section-sub">Cột: số người có lượt không đủ công · Đường: tổng số lần không đủ công</span></div>
+      <div class="panel" id="cc-confirm-wrap"><div class="chart-wrap h240"><canvas id="cc-confirm"></canvas></div></div>
 
-      <div class="section-head"><h2>Heatmap chấm công theo ngày trong tháng</h2><span class="section-sub">Mật độ trễ/về sớm/vắng gộp theo ngày 1–31 (mọi tháng)</span></div>
-      <div class="panel" id="cc-heatmap"></div>
-
-      <div class="section-head"><h2>Chi tiết theo nhân viên</h2><span class="section-sub">Sắp xếp theo tổng giờ trễ</span></div>
+      <div class="section-head"><h2>Chi tiết theo nhân viên</h2><span class="section-sub">Sắp xếp theo số ngày không đủ công</span></div>
       <div class="panel"><div class="tbl-scroll" id="cc-emp-table"></div></div>
 
-      <div class="section-head"><h2>Dữ liệu chấm công bất thường</h2><span class="section-sub">Thiếu Check-in/Check-out, giờ trễ/OT bất thường</span></div>
-      <div class="panel"><div class="tbl-scroll" id="cc-anomaly-table"></div></div>
+      <div class="section-head"><h2>Dữ liệu chi tiết</h2></div>
+      <div class="panel" id="cc-detail"></div>
     </div>
 
     <!-- ============ PAGE 6: HR ALERTS ============ -->
@@ -1536,6 +1934,8 @@ const Pages = (function(){
    ============================================================ */
 const App = (function(){
   let files = { employee:null, attendance:null };
+  let dtGranularity = 'month'; // 'day' | 'week' | 'month' | 'year' — cho chart "Đơn theo thời gian"
+  let dtSlaExpanded = false; // "Phân tích điểm nghẽn SLA" ẩn mặc định, bấm nút mới hiện
   let state = null;
   let appStarted = false; // becomes true once the dashboard has been built at least once
 
@@ -1554,34 +1954,26 @@ const App = (function(){
   }
 
   async function tryLoadDefaultData(){
-    const statusEl = Core.$('uploadStatus');
-    const bar = Core.$('progressBar'), fill = Core.$('progressFill');
-    bar.style.display='block'; fill.style.width='15%';
-    statusEl.textContent = 'Đang tải dữ liệu mặc định…';
     if(Upload.loadEmbeddedEmployeeDefault()){
       try{
-        fill.style.width='55%'; statusEl.textContent='Đang xử lý dữ liệu…';
         await new Promise(r=>setTimeout(r,30));
         state = await Upload.loadFiles(null, null); // null,null => reuse just-loaded embedded employee workbook, no attendance yet
-        fill.style.width='85%';
         FilterBar.build(state.employees);
         Core.$('content').innerHTML = Pages.skeleton();
         FilterBar.renderControls(Core.$('filterbarHost'), state, renderAll);
         wireNav();
         renderAll();
-        fill.style.width='100%';
-        await new Promise(r=>setTimeout(r,120));
-        Core.$('uploadGate').style.display='none';
+        Core.$('initialLoader').style.display='none';
         Core.$('app').style.display='flex';
         Core.$('footTime').textContent = new Date().toLocaleString('vi-VN');
         appStarted = true;
       }catch(err){
         console.error('Lỗi khi dựng dashboard từ dữ liệu mặc định:', err);
-        bar.style.display='none';
+        Core.$('initialLoader').style.display='none';
         showGateForManualUpload();
       }
     } else {
-      bar.style.display='none';
+      Core.$('initialLoader').style.display='none';
       showGateForManualUpload();
     }
   }
@@ -1589,6 +1981,7 @@ const App = (function(){
   function showGateForManualUpload(){
     Core.$('gateLead').textContent = 'Tải lên dữ liệu để khởi tạo dashboard. Toàn bộ dữ liệu được xử lý ngay trên trình duyệt của bạn — không upload lên server nào.';
     Core.$('uploadStatus').textContent = 'Đang chờ dữ liệu…';
+    Core.$('uploadGate').style.display='flex';
   }
 
   function openUploadGate(){
@@ -1664,25 +2057,27 @@ const App = (function(){
 
   function wireNav(){
     document.querySelectorAll('.nav-item').forEach(item=>{
-      item.addEventListener('click', ()=>{
-        document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-        document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-        item.classList.add('active');
-        const pid = item.getAttribute('data-page');
-        Core.$(pid).classList.add('active');
-        const titles = {
-          'p-tongquan':['Tổng quan Nhân sự','Executive overview — toàn công ty'],
-          'p-nhansu':['Nhân sự','Hợp đồng · Employee 360 · Movement'],
-          'p-tuyendung':['Tuyển dụng','Recruitment funnel & hiệu quả nguồn tuyển'],
-          'p-donttu':['Đơn từ','Nghỉ phép · Công tác · Approval SLA'],
-          'p-chamcong':['Chấm công','Attendance · Late · Absence (dữ liệu giới hạn nhóm dùng app)'],
-          'p-alerts':['HR Analytics & Alerts','Rủi ro nhân sự tự động phát hiện'],
-        };
-        const t = titles[pid] || ['',''];
-        Core.$('pageTitle').textContent = t[0]; Core.$('pageSub').textContent = t[1];
-      });
+      item.addEventListener('click', ()=> switchPage(item.getAttribute('data-page')));
     });
     document.querySelector('.nav-item[data-page="p-tongquan"]').classList.add('active');
+  }
+
+  function switchPage(pid){
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active', n.getAttribute('data-page')===pid));
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    const pageEl = Core.$(pid); if(!pageEl) return;
+    pageEl.classList.add('active');
+    const titles = {
+      'p-tongquan':['Tổng quan Nhân sự','Executive overview — toàn công ty'],
+      'p-nhansu':['Nhân sự','Hợp đồng · Employee 360 · Movement'],
+      'p-tuyendung':['Tuyển dụng','Recruitment funnel & hiệu quả nguồn tuyển'],
+      'p-donttu':['Đơn từ','Nghỉ phép · Công tác · Approval SLA'],
+      'p-chamcong':['Chấm công','Attendance · Late · Absence (dữ liệu giới hạn nhóm dùng app)'],
+      'p-alerts':['HR Analytics & Alerts','Rủi ro nhân sự tự động phát hiện'],
+    };
+    const t = titles[pid] || ['',''];
+    Core.$('pageTitle').textContent = t[0]; Core.$('pageSub').textContent = t[1];
+    window.scrollTo({top:0, behavior:'instant'});
   }
 
   function renderAll(){
@@ -1704,8 +2099,12 @@ const App = (function(){
   }
 
   function renderOverview(ov, empMod){
-    const y = FilterBar.getState().year;
-    Core.$('ov-trend-label').textContent = (y==='all') ? '12 tháng gần nhất' : ('Năm '+y);
+    const fs = FilterBar.getState();
+    if(fs.fromDate && fs.toDate){
+      Core.$('ov-trend-label').textContent = fs.fromDate.toLocaleDateString('vi-VN')+' – '+fs.toDate.toLocaleDateString('vi-VN');
+    } else {
+      Core.$('ov-trend-label').textContent = '12 tháng gần nhất';
+    }
     Render.kpiGrid('ov-kpis', [
       {label:'Tổng nhân viên', value:Core.fmtNum(ov.total), unit:'người'},
       {label:'Đang làm việc', value:Core.fmtNum(ov.active), unit:'người', cls:'good'},
@@ -1715,68 +2114,153 @@ const App = (function(){
       {label:'Turnover Rate', value:Core.fmtPct(ov.turnoverRate), cls: ov.turnoverRate>15?'bad':'good',
         delta: ov.turnoverRate>15?'Vượt ngưỡng 15%':'Trong ngưỡng an toàn', deltaType: ov.turnoverRate>15?'down':'up'},
     ]);
-    Render.comboChart('ov-trend', ov.months.map(Core.monthLabel),
-      {label:'Net thay đổi (Tuyển mới − Nghỉ việc)', data: ov.months.map(k=>ov.joinsByMonth[k]-ov.leavesByMonth[k])},
-      {label:'Headcount lũy kế', data: ov.netSeries});
-    Render.barChart('ov-dept', ov.byDept.map(d=>d.label), ov.byDept.map(d=>d.value), {horizontal:true, color:Core.COLORS.blue, filterKey:'dept', onClickLabel: l=>FilterBar.setFilter('dept', l)});
-    Render.barChart('ov-location', ov.byLocation.map(d=>d.label), ov.byLocation.map(d=>d.value), {color:Core.COLORS.amber, filterKey:'location', onClickLabel: l=>FilterBar.setFilter('location', l)});
+    Render.groupedBarWithLine('ov-trend', ov.months.map(Core.monthLabel),
+      [
+        {label:'Tuyển mới', data: ov.months.map(k=>ov.joinsByMonth[k]), color:Core.COLORS.green},
+        {label:'Nghỉ việc', data: ov.months.map(k=>ov.leavesByMonth[k]), color:Core.COLORS.red},
+      ],
+      {label:'Headcount lũy kế', data: ov.netSeries}, {unit:'người', lineUnit:'người', dualAxis:true});
+    Render.barChart('ov-dept', ov.byDept.map(d=>d.label), ov.byDept.map(d=>d.value), {horizontal:true, color:Core.COLORS.blue, unit:'người', filterKey:'dept', onClickLabel: l=>FilterBar.setFilter('dept', l)});
+    Render.barChart('ov-location', ov.byLocation.map(d=>d.label), ov.byLocation.map(d=>d.value), {color:Core.COLORS.amber, unit:'người', filterKey:'location', onClickLabel: l=>FilterBar.setFilter('location', l)});
     const genderLabels = Array.from(ov.byGenderMap.keys()), genderValues = Array.from(ov.byGenderMap.values());
-    Render.donutChart('ov-gender', genderLabels, genderValues);
+    Render.donutChart('ov-gender', genderLabels, genderValues, {unit:'người'});
     Core.$('ov-gender-badge').textContent = `${ov.genderCoverage}/${ov.active} có dữ liệu`;
-    Render.donutChart('ov-type', ov.byType.map(t=>t.label), ov.byType.map(t=>t.value), {filterKey:'empType', onClickLabel: l=>FilterBar.setFilter('empType', l)});
-    Render.barChart('ov-age', Object.keys(ov.ageBuckets), Object.values(ov.ageBuckets), {color:Core.COLORS.purple});
+    Render.donutChart('ov-type', ov.byType.map(t=>t.label), ov.byType.map(t=>t.value), {unit:'người', filterKey:'empType', onClickLabel: l=>FilterBar.setFilter('empType', l)});
+    Render.barChart('ov-age', Object.keys(ov.ageBuckets), Object.values(ov.ageBuckets), {color:Core.COLORS.purple, unit:'người'});
     Core.$('ov-age-badge').textContent = `${ov.ageCoverage}/${ov.active} có dữ liệu`;
-    Render.barChart('ov-tenure', Object.keys(ov.tenureBuckets), Object.values(ov.tenureBuckets), {color:Core.COLORS.teal});
-    Render.barChart('ov-contracttype', empMod.byType.map(t=>t.label), empMod.byType.map(t=>t.value), {color:Core.COLORS.blueLight});
+    Render.barChart('ov-tenure', Object.keys(ov.tenureBuckets), Object.values(ov.tenureBuckets), {color:Core.COLORS.teal, unit:'người'});
+    Render.barChart('ov-contracttype', empMod.byType.map(t=>t.label), empMod.byType.map(t=>t.value), {color:Core.COLORS.blueLight, unit:'hợp đồng'});
+
+    DetailTable.render('ov-detail', {
+      tableId:'ovDetail', filename:'tong_quan_nhan_su.csv',
+      rows: ov.activeList,
+      columns: [
+        {key:'id', label:'Mã NV', default:true},
+        {key:'name', label:'Họ tên', default:true},
+        {key:'dept', label:'Phòng ban', default:true},
+        {key:'location', label:'Chi nhánh', default:true},
+        {key:'empType', label:'Loại hình', default:true},
+        {key:'gender', label:'Giới tính', render:r=>r.gender||'—', default:true},
+        {key:'age', label:'Tuổi', render:r=>{const a=Core.ageFromDOB(r.dob); return a===null?'—':a;}, default:true},
+        {key:'khoi', label:'Khối', default:false},
+        {key:'group', label:'Nhóm', default:false},
+        {key:'title', label:'Chức danh', default:false},
+        {key:'status', label:'Trạng thái', default:false},
+        {key:'startDate', label:'Ngày vào làm', render:r=> r.startDate? r.startDate.toLocaleDateString('vi-VN'):'—', default:false},
+      ],
+    });
   }
 
   function renderEmployee(empMod){
     Render.kpiGrid('hs-kpis', [
       {label:'Đang làm việc', value:Core.fmtNum(empMod.activeCount), unit:'người'},
+      {label:'Chuẩn bị nhận việc', value:Core.fmtNum(empMod.preboarding.length), unit:'người', cls:'amber'},
       {label:'Tổng hợp đồng theo dõi', value:Core.fmtNum(empMod.contractsTotal)},
       {label:'Sắp hết hạn ≤ 30 ngày', value:empMod.expiring30.length, cls: empMod.expiring30.length>0?'bad':'good'},
       {label:'Sắp hết hạn 31–60 ngày', value:empMod.expiring60.length, cls:'warn'},
       {label:'Nghỉ việc (đã duyệt)', value:Core.fmtNum(empMod.resignationsTotal)},
     ]);
-    Render.barChart('hs-status', empMod.byStatus.map(s=>s.label), empMod.byStatus.map(s=>s.value), {color:Core.COLORS.blue});
-    Render.barChart('hs-type', empMod.byType.map(s=>s.label), empMod.byType.map(s=>s.value), {color:Core.COLORS.amber});
+    Render.barChart('hs-title', empMod.byTitle.map(s=>s.label), empMod.byTitle.map(s=>s.value), {horizontal:true, color:Core.COLORS.purple, unit:'người'});
+    Render.barChart('hs-status', empMod.byStatus.map(s=>s.label), empMod.byStatus.map(s=>s.value), {color:Core.COLORS.blue, unit:'hợp đồng'});
+    Render.barChart('hs-type', empMod.byType.map(s=>s.label), empMod.byType.map(s=>s.value), {color:Core.COLORS.amber, unit:'hợp đồng'});
     Core.$('hs-expiring-badge').textContent = empMod.expiring30.length + ' hợp đồng';
     Render.table('hs-expiring-table',
       [{label:'Mã NV', key:'id'}, {label:'Họ tên', key:'name'}, {label:'Phòng ban', key:'dept'},
        {label:'Ngày hết hạn', render:r=>r.end.toLocaleDateString('vi-VN')},
        {label:'Còn lại', render:r=>Core.daysBetween(state.dataAsOf, r.end)+' ngày'}],
       empMod.expiring30.sort((a,b)=>a.end-b.end), {emptyText:'Không có hợp đồng nào sắp hết hạn trong 30 ngày tới.'});
-    Render.barChart('hs-tenureband', Object.keys(empMod.tenureBands), Object.values(empMod.tenureBands), {color:Core.COLORS.red});
-    Render.barChart('hs-reason', empMod.reasonCounts.map(r=>r.label), empMod.reasonCounts.map(r=>r.value), {horizontal:true, color:Core.COLORS.gray});
+    Render.barChart('hs-tenureband', Object.keys(empMod.tenureBands), Object.values(empMod.tenureBands), {color:Core.COLORS.red, unit:'người'});
+    Render.barChart('hs-reason', empMod.reasonCounts.map(r=>r.label), empMod.reasonCounts.map(r=>r.value), {horizontal:true, color:Core.COLORS.gray, unit:'người'});
     const top = empMod.reasonCounts[0];
     const calloutEl = Core.$('hs-reason-callout');
     if(top && empMod.resignationsTotal>0 && top.value/empMod.resignationsTotal>0.5){
       calloutEl.innerHTML = `<span class="ic">ℹ️</span><div><b>${Core.fmtPct(top.value/empMod.resignationsTotal*100)}</b> lý do nghỉ việc được ghi nhận là "<b>${top.label}</b>" — quá chung chung để phân tích nguyên nhân gốc rễ. Đề xuất bổ sung phỏng vấn thôi việc (exit interview) có cấu trúc hơn.</div>`;
       calloutEl.style.display='flex';
     } else { calloutEl.style.display='none'; }
-    Render.barChart('hs-resign-dept', empMod.resignByDept.map(d=>d.label), empMod.resignByDept.map(d=>d.value), {horizontal:true, color:Core.COLORS.red, filterKey:'dept', onClickLabel: l=>FilterBar.setFilter('dept', l)});
-    Render.barChart('hs-resign-location', empMod.resignByLocation.map(d=>d.label), empMod.resignByLocation.map(d=>d.value), {color:Core.COLORS.blue, filterKey:'location', onClickLabel: l=>FilterBar.setFilter('location', l)});
+    Render.barChart('hs-resign-dept', empMod.resignByDept.map(d=>d.label), empMod.resignByDept.map(d=>d.value), {horizontal:true, color:Core.COLORS.red, unit:'người', filterKey:'dept', onClickLabel: l=>FilterBar.setFilter('dept', l)});
+    Render.barChart('hs-resign-location', empMod.resignByLocation.map(d=>d.label), empMod.resignByLocation.map(d=>d.value), {color:Core.COLORS.blue, unit:'người', filterKey:'location', onClickLabel: l=>FilterBar.setFilter('location', l)});
+
+    Render.table('hs-upcoming-resign-table',
+      [{label:'Mã NV', key:'id'}, {label:'Họ tên', key:'name'}, {label:'Phòng ban', key:'dept'},
+       {label:'Chi nhánh', key:'branch'},
+       {label:'Ngày nghỉ chính thức', render:r=>`<span class="badge warn">${r.endDate.toLocaleDateString('vi-VN')}</span>`},
+       {label:'Còn lại', render:r=>Core.daysBetween(state.dataAsOf, r.endDate)+' ngày'},
+       {label:'Lý do', render:r=>r.reason||'—'}],
+      empMod.upcomingResignations, {emptyText:'Không có nhân sự nào sắp nghỉ việc theo bộ lọc hiện tại.'});
   }
 
   function renderRecruitment(recruit){
+    FilterBar.renderPageFilter('tdFilterHost', 'recruitStatus', recruit.allCandidateStatuses, 'Trạng thái ứng viên');
     Render.kpiGrid('td-kpis', [
       {label:'Vị trí đang tuyển', value:recruit.openJobs, unit:'VT'},
       {label:'Tổng tin tuyển', value:recruit.totalJobs},
-      {label:'Tổng ứng viên', value:recruit.totalCandidates, cls:'amber'},
+      {label:'Số lượng cần tuyển', value:recruit.neededTotal, unit:'người', cls:'amber'},
+      {label:'Tổng ứng viên', value:recruit.totalCandidates},
       {label:'Đã tuyển thành công', value:recruit.hired, cls:'good'},
       {label:'Rớt / Đóng hồ sơ', value:recruit.rejected, cls:'bad'},
     ]);
     Render.funnel('td-funnel', recruit.funnel);
-    Render.donutChart('td-status', recruit.byStatus.map(s=>s.label), recruit.byStatus.map(s=>s.value));
-    Render.barChart('td-dept', recruit.byDept.map(d=>d.label), recruit.byDept.map(d=>d.value), {horizontal:true, color:Core.COLORS.teal, filterKey:'dept', onClickLabel: l=>FilterBar.setFilter('dept', l)});
-    Render.barChart('td-source', recruit.bySource.map(s=>s.label), recruit.bySource.map(s=>s.value), {horizontal:true, color:Core.COLORS.purple});
+    Render.donutChart('td-status', recruit.byStatus.map(s=>s.label), recruit.byStatus.map(s=>s.value), {unit:'hồ sơ', filterKey:'recruitStatus', onClickLabel: l=>FilterBar.setFilter('recruitStatus', l)});
+    Render.barChart('td-dept', recruit.byDept.map(d=>d.label), recruit.byDept.map(d=>d.value), {horizontal:true, color:Core.COLORS.teal, unit:'tin tuyển', filterKey:'dept', onClickLabel: l=>FilterBar.setFilter('dept', l)});
+    Render.comboChart('td-demand-trend', recruit.demandMonthKeys.map(Core.monthLabel),
+      {label:'Cần tuyển', data: recruit.demandMonthKeys.map(k=>recruit.neededByMonth[k]||0)},
+      {label:'Đã tuyển được', data: recruit.demandMonthKeys.map(k=>recruit.hiredByMonth[k]||0)},
+      {barUnit:'người', lineUnit:'người'});
+    Render.barChart('td-source', recruit.bySource.map(s=>s.label), recruit.bySource.map(s=>s.value), {horizontal:true, color:Core.COLORS.purple, unit:'hồ sơ'});
+    Render.lineChart('td-applied-trend', recruit.appliedMonthKeys.map(Core.monthLabel), [
+      {label:'Hồ sơ ứng tuyển', data: recruit.appliedMonthKeys.map(k=>recruit.appliedByMonth[k]), color:Core.COLORS.blue},
+    ], {unit:'hồ sơ'});
+
+    const notEmpEl = Core.$('td-notemployee-callout');
+    if(recruit.hiredButNotEmployee.length>0){
+      notEmpEl.style.display='flex';
+      notEmpEl.innerHTML = `<span class="ic">⚠️</span><div><b>${recruit.hiredButNotEmployee.length}</b> ứng viên đã ở trạng thái "chính thức" trên hệ thống tuyển dụng nhưng KHÔNG có mặt trong bảng nhân sự (đối chiếu qua Hồ sơ ứng viên): <b>${recruit.hiredButNotEmployee.map(c=>c.name||c.id).join(', ')}</b>. Có thể đây là trường hợp ứng viên đậu nhưng huỷ nhận việc phút chót, hoặc dữ liệu chưa được đồng bộ — nên rà soát.</div>`;
+    } else {
+      notEmpEl.style.display='none';
+    }
+
     Render.table('td-jobs-table',
       [{label:'Vị trí', key:'position'}, {label:'Phòng ban', key:'dept'}, {label:'Chi nhánh', key:'branch'},
        {label:'SL cần', key:'qty'}, {label:'SL đã có', key:'filled'}, {label:'Trạng thái', key:'status'}],
       recruit.jobs, {emptyText:'Không có tin tuyển dụng phù hợp bộ lọc.'});
+
+    const jobById = {}; recruit.jobs.forEach(j=> jobById[j.id]=j);
+    DetailTable.render('td-detail', {
+      tableId:'tdDetail', filename:'ung_vien_chi_tiet.csv',
+      rows: recruit.candidates,
+      columns: [
+        {key:'id', label:'Mã hồ sơ', default:true},
+        {key:'name', label:'Họ tên', default:true},
+        {key:'status', label:'Trạng thái', default:true},
+        {key:'source', label:'Nguồn', render:r=> r.referrer?'Giới thiệu nội bộ':((jobById[r.jobId]&&jobById[r.jobId].channel)||'Không rõ'), default:true},
+        {key:'dept', label:'Phòng ban', render:r=> (jobById[r.jobId]&&jobById[r.jobId].dept)||'—', default:true},
+        {key:'position', label:'Vị trí', render:r=>r.position||'—', default:false},
+        {key:'appliedDate', label:'Ngày nộp hồ sơ', render:r=> r.appliedDate? r.appliedDate.toLocaleDateString('vi-VN'):'—', default:false},
+        {key:'hireDate', label:'Ngày nhận việc', render:r=> r.hireDate? r.hireDate.toLocaleDateString('vi-VN'):'—', default:false},
+      ],
+    });
+  }
+
+  function renderRequestTimeChart(req){
+    const map = {
+      day: [req.byDay, req.daysByDay, req.dayKeys, Core.dayLabel],
+      week: [req.byWeek, req.daysByWeek, req.weekKeys, Core.weekLabel],
+      month: [req.byMonthReq, req.daysByMonth, req.monthReqKeys, Core.monthLabel],
+      year: [req.byYear, req.daysByYear, req.yearKeys, k=>k],
+    };
+    const [dataMap, daysMap, keys, labelFn] = map[dtGranularity];
+    Render.comboChart('dt-time-trend', keys.map(labelFn),
+      {label:'Số đơn', data: keys.map(k=>dataMap[k]||0)},
+      {label:'Số ngày nghỉ', data: keys.map(k=>Math.round((daysMap[k]||0)*10)/10)},
+      {barUnit:'đơn', lineUnit:'ngày'});
+    document.querySelectorAll('#dtGranToggle .gran-chip').forEach(chip=>{
+      chip.classList.toggle('active', chip.dataset.gran===dtGranularity);
+      chip.onclick = ()=>{ dtGranularity = chip.dataset.gran; renderAll(); };
+    });
   }
 
   function renderRequests(req, empMod){
+    FilterBar.renderPageFilter('dtFilterHost', 'leaveStatus', req.allLeaveStatuses, 'Trạng thái đơn');
     Render.kpiGrid('dt-kpis', [
       {label:'Tổng đơn xin phép', value:Core.fmtNum(req.total)},
       {label:'Đã duyệt', value:Core.fmtNum(req.approved), cls:'good'},
@@ -1784,30 +2268,54 @@ const App = (function(){
       {label:'Không duyệt', value:Core.fmtNum(req.rejected), cls:'bad'},
       {label:'SLA duyệt trung bình', value: req.avgSLA!==null? Core.fmtNum1(req.avgSLA):'—', unit:'ngày', cls: (req.avgSLA>5)?'warn':'good'},
     ]);
-    Render.donutChart('dt-type', req.byType.map(t=>t.label), req.byType.map(t=>t.value));
-    const order=[1,2,3,4,5,6,0];
-    Render.barChart('dt-dow', order.map(i=>req.dowNames[i]), order.map(i=>req.dowCount[i]), {color:Core.COLORS.purple});
-    Render.barChart('dt-dept', req.byDept.map(d=>d.label), req.byDept.map(d=>d.value), {horizontal:true, color:Core.COLORS.blue, filterKey:'dept', onClickLabel: l=>FilterBar.setFilter('dept', l)});
-    Render.barChart('dt-reason', req.byReason.map(r=>r.label), req.byReason.map(r=>r.value), {horizontal:true, color:Core.COLORS.amberDark});
+    Render.donutChart('dt-type', req.byType.map(t=>t.label), req.byType.map(t=>t.value), {unit:'đơn'});
+    Render.barChart('dt-status-chart', req.byStatus.map(s=>s.label), req.byStatus.map(s=>s.value), {color:Core.COLORS.blue, unit:'đơn', filterKey:'leaveStatus', onClickLabel: l=>FilterBar.setFilter('leaveStatus', l)});
+    renderRequestTimeChart(req);
+    Render.barChart('dt-dept', req.byDept.map(d=>d.label), req.byDept.map(d=>d.value), {horizontal:true, color:Core.COLORS.blue, unit:'đơn', filterKey:'dept', onClickLabel: l=>FilterBar.setFilter('dept', l)});
+    Render.barChart('dt-reason', req.byReason.map(r=>r.label), req.byReason.map(r=>r.value), {horizontal:true, color:Core.COLORS.amberDark, unit:'đơn'});
     Render.comboChart('dt-resign-trend', empMod.resignMonthKeys.map(Core.monthLabel),
       {label:'Số đơn thôi việc', data: empMod.resignMonthKeys.map(k=>empMod.resignByMonth[k].count)},
-      {label:'Xu hướng', data: empMod.resignMonthKeys.map(k=>empMod.resignByMonth[k].count)});
-    Render.barChart('dt-sla-hist', Object.keys(req.slaBuckets), Object.values(req.slaBuckets), {color:Core.COLORS.blue});
+      {label:'Xu hướng', data: empMod.resignMonthKeys.map(k=>empMod.resignByMonth[k].count)}, {barUnit:'đơn', lineUnit:'đơn'});
+    Render.barChart('dt-sla-hist', Object.keys(req.slaBuckets), Object.values(req.slaBuckets), {color:Core.COLORS.blue, unit:'đơn'});
     Render.table('dt-slow-table',
       [{label:'Mã NV', key:'id'}, {label:'Họ tên', key:'name'}, {label:'Phòng ban', key:'dept'},
        {label:'Ngày tạo', render:r=>r.created.toLocaleDateString('vi-VN')},
        {label:'Ngày duyệt', render:r=>r.approvedAt.toLocaleDateString('vi-VN')},
        {label:'SLA', render:r=>`<span class="badge bad">${r.sla} ngày</span>`}],
       req.slowSLA, {emptyText:'Không có đơn nào xử lý chậm hơn 7 ngày.'});
-    Render.table('dt-approver-table',
-      [{label:'Người duyệt', render:r=>r.name.split('(')[0].trim()}, {label:'Số đơn', key:'count'},
-       {label:'SLA TB', render:r=>`<span class="badge ${r.avg>20?'bad':(r.avg>10?'warn':'good')}">${Core.fmtNum1(r.avg)} ngày</span>`},
-       {label:'SLA tối đa', render:r=>Core.fmtNum1(r.max)+' ngày'}],
-      req.slaByApprover, {emptyText:'Không đủ dữ liệu (cần ≥10 đơn/người duyệt).'});
-    Render.barChart('dt-sla-dept', req.slaByDept.map(d=>d.name), req.slaByDept.map(d=>d.avg), {horizontal:true, color:Core.COLORS.red});
+
+    Core.$('dtSlaToggleBtn').textContent = dtSlaExpanded ? '🙈 Ẩn chi tiết' : '👁 Xem chi tiết';
+    Core.$('dtSlaToggleBtn').onclick = ()=>{ dtSlaExpanded = !dtSlaExpanded; renderAll(); };
+    Core.$('dtSlaSection').style.display = dtSlaExpanded ? 'block' : 'none';
+    if(dtSlaExpanded){
+      Render.table('dt-approver-table',
+        [{label:'Người duyệt', render:r=>r.name.split('(')[0].trim()}, {label:'Số đơn', key:'count'},
+         {label:'SLA TB', render:r=>`<span class="badge ${r.avg>20?'bad':(r.avg>10?'warn':'good')}">${Core.fmtNum1(r.avg)} ngày</span>`},
+         {label:'SLA tối đa', render:r=>Core.fmtNum1(r.max)+' ngày'}],
+        req.slaByApprover, {emptyText:'Không đủ dữ liệu (cần ≥10 đơn/người duyệt).'});
+      Render.barChart('dt-sla-dept', req.slaByDept.map(d=>d.name), req.slaByDept.map(d=>d.avg), {horizontal:true, color:Core.COLORS.red, unit:'ngày'});
+    }
+
+    DetailTable.render('dt-detail', {
+      tableId:'dtDetail', filename:'don_tu_chi_tiet.csv',
+      rows: req.leave,
+      columns: [
+        {key:'id', label:'Mã NV', default:true},
+        {key:'name', label:'Họ tên', default:true},
+        {key:'dept', label:'Phòng ban', default:true},
+        {key:'type', label:'Loại đơn', default:true},
+        {key:'status', label:'Trạng thái', default:true},
+        {key:'from', label:'Từ ngày', render:r=> r.from? r.from.toLocaleDateString('vi-VN'):'—', default:true},
+        {key:'to', label:'Đến ngày', render:r=> r.to? r.to.toLocaleDateString('vi-VN'):'—', default:false},
+        {key:'days', label:'Số ngày', default:false},
+        {key:'reason', label:'Lý do', render:r=>r.reason||'—', default:false},
+        {key:'approver', label:'Người duyệt', render:r=>r.approver||'—', default:false},
+      ],
+    });
   }
 
   function renderAttendance(attMod){
+    FilterBar.renderPageFilter('ccFilterHost', 'attStatus', attMod.allAttStatuses, 'Trạng thái chấm công');
     const cov = attMod.totalActive>0 ? (attMod.coveredCount/attMod.totalActive*100) : 0;
     const covEl = Core.$('att-coverage-callout');
     if(!attMod.found){
@@ -1834,92 +2342,83 @@ const App = (function(){
     }
     Render.kpiGrid('cc-kpis', kpis);
 
-    Render.donutChart('cc-status-donut', Object.keys(attMod.statusBuckets), Object.values(attMod.statusBuckets));
-    Render.lineChart('cc-trend', attMod.monthKeys.map(Core.monthLabel), [
-      {label:'Lượt chấm công', data: attMod.monthKeys.map(k=>attMod.byMonth[k].records), color:Core.COLORS.blue},
-      {label:'Lượt trễ', data: attMod.monthKeys.map(k=>attMod.byMonth[k].late), color:Core.COLORS.amberDark},
-      {label:'Lượt vắng', data: attMod.monthKeys.map(k=>attMod.byMonth[k].absent), color:Core.COLORS.red},
-    ]);
+    Render.donutChart('cc-status-donut', Object.keys(attMod.statusBuckets), Object.values(attMod.statusBuckets), {unit:'lượt', filterKey:'attStatus', onClickLabel: l=>FilterBar.setFilter('attStatus', l)});
+
+    // Xu hướng chấm công theo tháng: cột = số người chấm công (distinct), đường = tổng lượt chấm công
+    Render.comboChart('cc-trend', attMod.monthKeys.map(Core.monthLabel),
+      {label:'Số người chấm công', data: attMod.monthKeys.map(k=>attMod.peopleByMonth[k]||0)},
+      {label:'Tổng lượt chấm công', data: attMod.monthKeys.map(k=>attMod.recordsByMonth[k]||0)},
+      {barUnit:'người', lineUnit:'lượt'});
+
     const anomEl = Core.$('cc-anomaly-callout');
     if(attMod.anomalousLate.length>0){
       anomEl.innerHTML = `<span class="ic">ℹ️</span><div><b>${attMod.anomalousLate.length}</b> lượt có số giờ trễ &gt; 3 giờ — nhiều khả năng là do chọn sai ca trong app chứ không phải đi trễ thực tế. Nên loại các giá trị này trước khi tính KPI Late Rate chính thức.</div>`;
       anomEl.style.display='flex';
     } else { anomEl.style.display='none'; }
 
-    // Đi trễ theo tháng (combo: lượt + tổng giờ)
-    Render.comboChart('cc-late-trend', attMod.monthKeys.map(Core.monthLabel),
-      {label:'Số lượt trễ', data: attMod.monthKeys.map(k=>attMod.byMonth[k].late)},
-      {label:'Tổng giờ trễ', data: attMod.monthKeys.map(k=>Math.round(attMod.byMonth[k].lateHours*10)/10)});
+    // Trạng thái chấm công theo phòng ban — stacked bar theo đúng trạng thái gốc
+    Render.stackedBarChart('cc-dept-status', attMod.byDept.map(d=>d.dept),
+      attMod.allAttStatuses.map((label,i)=>({
+        label, color: Core.PALETTE[i%Core.PALETTE.length],
+        data: attMod.byDept.map(d=> d.statusCounts[label]||0),
+      })), {unit:'lượt', horizontal:true});
 
-    // Về sớm theo tháng — chỉ khi phát hiện được cột dữ liệu
-    if(attMod.hasEarly){
-      Core.$('cc-early-trend-wrap').innerHTML = '<canvas id="cc-early-trend"></canvas>';
-      Render.comboChart('cc-early-trend', attMod.monthKeys.map(Core.monthLabel),
-        {label:'Số lượt về sớm', data: attMod.monthKeys.map(k=>attMod.byMonth[k].early)},
-        {label:'Tổng giờ về sớm', data: attMod.monthKeys.map(k=>Math.round(attMod.byMonth[k].earlyHours*10)/10)});
-    } else {
-      Core.$('cc-early-trend-wrap').innerHTML = '<div class="empty-note">File chấm công chưa có cột "Số giờ về sớm" — không thể phân tích mục này.</div>';
-    }
-
-    Render.table('cc-dept-table',
-      [{label:'Phòng ban', key:'dept'}, {label:'Số NV', key:'empCount'}, {label:'Lượt chấm công', key:'records'},
-       {label:'Tỷ lệ trễ', render:r=>`<span class="badge ${r.lateRate>20?'bad':(r.lateRate>10?'warn':'good')}">${Core.fmtPct(r.lateRate)}</span>`},
-       {label:'Tỷ lệ về sớm', render:r=> attMod.hasEarly? `<span class="badge ${r.earlyRate>10?'warn':'neutral'}">${Core.fmtPct(r.earlyRate)}</span>` : '—'},
-       {label:'Tỷ lệ vắng', render:r=>`<span class="badge ${r.absentRate>10?'bad':'neutral'}">${Core.fmtPct(r.absentRate)}</span>`}],
-      attMod.byDept, {emptyText:'Không có dữ liệu phòng ban.', onRowClick: r=>FilterBar.setFilter('dept', r.dept)});
+    // Trạng thái theo ngày trong tuần + tổng lượt chấm công (đường)
     const dowOrder=[1,2,3,4,5,6,0];
-    Render.stackedBarChart('cc-dow', dowOrder.map(i=>attMod.dowNames[i]), [
-      {label:'Lượt trễ', data: dowOrder.map(i=>attMod.dowLate[i]), color:Core.COLORS.amberDark},
-      {label:'Lượt vắng', data: dowOrder.map(i=>attMod.dowAbsent[i]), color:Core.COLORS.red},
-    ]);
+    Render.stackedBarWithLine('cc-dow',
+      dowOrder.map(i=>attMod.dowNames[i]),
+      attMod.allAttStatuses.map((label,i)=>({
+        label, color: Core.PALETTE[i%Core.PALETTE.length],
+        data: dowOrder.map(i2=> attMod.dowStatusCounts[i2][label]||0),
+      })),
+      {label:'Tổng lượt chấm công', data: dowOrder.map(i=>attMod.dowTotal[i])},
+      {unit:'lượt'});
 
-    // Giờ làm trung bình theo phòng ban — cần cả GioVao & GioRa
+    // Giờ làm trung bình theo phòng ban — cần cả GioVao & GioRa. Hover hiện thêm số người chấm công.
     if(attMod.hasCheckTimes && attMod.byDeptWorkHours.length>0){
       Core.$('cc-workhours-wrap').innerHTML = '<canvas id="cc-workhours"></canvas>';
-      Render.barChart('cc-workhours', attMod.byDeptWorkHours.map(d=>d.dept), attMod.byDeptWorkHours.map(d=>Math.round(d.avgWorkHours*10)/10), {horizontal:true, color:Core.COLORS.teal});
+      const whByDept = {}; attMod.byDeptWorkHours.forEach(d=> whByDept[d.dept]=d.empCount);
+      Render.barChart('cc-workhours', attMod.byDeptWorkHours.map(d=>d.dept), attMod.byDeptWorkHours.map(d=>Math.round(d.avgWorkHours*10)/10),
+        {horizontal:true, color:Core.COLORS.teal, unit:'giờ',
+         tooltipExtra: (label)=> `Số người chấm công: ${Core.fmtNum(whByDept[label]||0)}`});
     } else {
       Core.$('cc-workhours-wrap').innerHTML = '<div class="empty-note">File chấm công chưa có cột giờ Check-in/Check-out dạng thời gian — không tính được số giờ làm việc.</div>';
     }
 
-    // OT
-    if(attMod.hasOt){
-      Core.$('cc-ot-trend-wrap').innerHTML = '<canvas id="cc-ot-trend"></canvas>';
-      Render.comboChart('cc-ot-trend', attMod.monthKeys.map(Core.monthLabel),
-        {label:'Số lượt OT', data: attMod.monthKeys.map(k=>attMod.byMonth[k].otCount)},
-        {label:'Tổng giờ OT', data: attMod.monthKeys.map(k=>Math.round(attMod.byMonth[k].otHours*10)/10)});
-      Core.$('cc-ot-dept-wrap').innerHTML = '<canvas id="cc-ot-dept"></canvas>';
-      Render.barChart('cc-ot-dept', attMod.byDeptOt.map(d=>d.dept), attMod.byDeptOt.map(d=>Math.round(d.otHours*10)/10), {horizontal:true, color:Core.COLORS.amberDark});
+    // Không đủ công theo phòng ban — cột: số người · đường: tổng số lần không đủ công
+    if(attMod.notFullByDept.length>0){
+      Core.$('cc-confirm-wrap').innerHTML = '<div class="chart-wrap h240"><canvas id="cc-confirm"></canvas></div>';
+      Render.comboChart('cc-confirm', attMod.notFullByDept.map(d=>d.dept),
+        {label:'Số người không đủ công', data: attMod.notFullByDept.map(d=>d.peopleCount)},
+        {label:'Tổng số lần không đủ công', data: attMod.notFullByDept.map(d=>d.count)},
+        {barUnit:'người', lineUnit:'lần'});
     } else {
-      Core.$('cc-ot-trend-wrap').innerHTML = '<div class="empty-note">File chấm công chưa có cột "Số giờ OT" — không thể phân tích làm thêm giờ.</div>';
-      Core.$('cc-ot-dept-wrap').innerHTML = '<div class="empty-note">Không có dữ liệu OT.</div>';
+      Core.$('cc-confirm-wrap').innerHTML = '<div class="empty-note">Không có lượt chấm công nào thiếu Check-in/Check-out trong dữ liệu đang lọc.</div>';
     }
-
-    // Xác nhận công theo phòng ban
-    if(attMod.hasConfirm && attMod.confirmByDept.length>0){
-      Core.$('cc-confirm-wrap').innerHTML = '<div class="chart-wrap h280"><canvas id="cc-confirm"></canvas></div>';
-      Render.stackedBarChart('cc-confirm', attMod.confirmByDept.map(d=>d.dept), [
-        {label:'Đã xác nhận', data: attMod.confirmByDept.map(d=>d.confirmed), color:Core.COLORS.green},
-        {label:'Xác nhận thiếu', data: attMod.confirmByDept.map(d=>d.partial), color:Core.COLORS.amberDark},
-        {label:'Chưa xác nhận', data: attMod.confirmByDept.map(d=>d.unconfirmed), color:Core.COLORS.red},
-      ]);
-    } else {
-      Core.$('cc-confirm-wrap').innerHTML = '<div class="empty-note">File chấm công chưa có cột trạng thái xác nhận công — không thể phân tích mục này.</div>';
-    }
-
-    Render.heatmapDayOfMonth('cc-heatmap', attMod.domCounts);
 
     Render.table('cc-emp-table',
-      [{label:'Mã NV', key:'id'}, {label:'Họ tên', key:'name'}, {label:'Số ngày công', key:'days'},
-       {label:'Số lần trễ', key:'lateDays'}, {label:'Tổng giờ trễ', render:r=>Core.fmtNum1(r.lateHoursTotal)},
-       {label:'Số lần về sớm', render:r=> attMod.hasEarly? r.earlyDays : '—'},
-       {label:'Số ngày vắng', key:'absentDays'}],
+      [{label:'Mã NV', key:'id'}, {label:'Họ tên', key:'name'}, {label:'Phòng ban', key:'dept'}, {label:'Số ngày công', key:'days'},
+       {label:'Số ngày đủ công', render:r=>`<span class="badge good">${r.fullDays}</span>`},
+       {label:'Số ngày không đủ công', render:r=>`<span class="badge ${r.notFullDays>0?'warn':'neutral'}">${r.notFullDays}</span>`},
+       {label:'Số ngày vắng', render:r=>`<span class="badge ${r.absentDays>0?'bad':'neutral'}">${r.absentDays}</span>`}],
       attMod.empList, {emptyText:'Không có dữ liệu chấm công phù hợp.'});
 
-    Render.table('cc-anomaly-table',
-      [{label:'Mã NV', key:'id'}, {label:'Họ tên', key:'name'},
-       {label:'Ngày', render:r=> r.date? r.date.toLocaleDateString('vi-VN') : '—'},
-       {label:'Loại bất thường', render:r=>`<span class="badge bad">${r.issue}</span>`}],
-      attMod.anomalies.slice(0,50), {emptyText:'Không phát hiện dữ liệu chấm công bất thường.'});
+    DetailTable.render('cc-detail', {
+      tableId:'ccDetail', filename:'chi_tiet_cham_cong.csv',
+      rows: attMod.records,
+      columns: [
+        {key:'id', label:'Mã NV', default:true},
+        {key:'name', label:'Họ tên', default:true},
+        {key:'dept', label:'Phòng ban', render:r=>r.dept||'—', default:true},
+        {key:'date', label:'Ngày', render:r=> r.date? r.date.toLocaleDateString('vi-VN'):'—', default:true},
+        {key:'status', label:'Trạng thái', render:r=>r.status||'—', default:true},
+        {key:'checkInTime', label:'Check-in', render:r=>r.checkInTime||'—', default:false},
+        {key:'checkOutTime', label:'Check-out', render:r=>r.checkOutTime||'—', default:false},
+        {key:'lateHours', label:'Giờ trễ', render:r=>r.lateHours?Core.fmtNum1(r.lateHours):'—', default:false},
+        {key:'earlyHours', label:'Giờ về sớm', render:r=>r.earlyHours?Core.fmtNum1(r.earlyHours):'—', default:false},
+        {key:'confirmStatus', label:'Xác nhận công', render:r=>r.confirmStatus||'—', default:false},
+      ],
+    });
   }
 
   function renderAlerts(alerts){
@@ -1932,7 +2431,7 @@ const App = (function(){
       {label:'Mức trung bình', value:med, cls:'warn'},
       {label:'Mức thấp / cần lưu ý', value:low},
     ]);
-    Render.insightList('al-list', alerts);
+    Render.insightList('al-list', alerts, {onNavigate: switchPage});
   }
 
   return { initUploadGate, buildDashboard, openUploadGate, closeUploadGate };
